@@ -16,9 +16,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP\\td3\\temp\\buffer-dist.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer.pkl"
     else:
-        file_loc = "/home/student/Baxter_Code/Baxter-VREP/td3/temp/buffer-dist.pkl"
+        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -49,32 +49,44 @@ def populate_buffer(sim, replay_buffer):
     buffer = cons.BUFFER_SIZE - replay_counter
     print('Buffer size {}/{} loaded from previous session'.format(replay_counter, cons.BUFFER_SIZE))
 
-    distance = 0
     for x in range(buffer):
 
-        state = sim.get_input_image()
+        right_pos, left_pos = sim.get_current_position()
+        state = right_pos + left_pos
 
         value = [-0.1, 0, 0.1]
-        action = []
+        right_action = []
+        left_action = []
         for i in range(7):
-            action.append(random.choice(value))
+            right_action.append(random.choice(value))
+            left_action.append(random.choice(value))
 
-        sim.step_right(action)
-        next_state = sim.get_input_image()
-        new_distance = sim.calc_distance()
+        action = right_action + left_action
+        if cons.MODE == 'cooperative':
+            next_state = sim.step_right(right_action)
+            next_state.append(sim.step_left(left_action))
+        elif cons.MODE == 'independent':
+            next_state = sim.step_right(right_action)
+            # TODO add in left
 
-        reward = distance - new_distance
+        right_reward, left_reward = sim.calc_distance()
 
-        right_arm_collision_state = sim.get_collision_state()
+        right_arm_collision_state = sim.right_collision_state()
+        left_arm_collision_state = sim.left_collision_state()
 
-        if new_distance < cons.SOLVED_DISTANCE:
+        if right_reward > cons.SOLVED_DISTANCE or left_reward > cons.SOLVED_DISTANCE:
             done = True
-        elif right_arm_collision_state:
+        elif right_arm_collision_state or left_arm_collision_state:
             done = True
         else:
             done = False
 
-        distance = new_distance
+        # Todo, update reward properly
+        # set new reward as average of both rewards
+        print("right reward: {}".format(right_reward))
+        print("left  reward: {}".format(left_reward))
+        reward = right_reward + left_reward / 2
+
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
 

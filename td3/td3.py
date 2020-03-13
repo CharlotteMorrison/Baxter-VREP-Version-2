@@ -90,7 +90,7 @@ class TD3(object):
                          cons.POLICY_NOISE).clamp(-cons.NOISE_CLIP, cons.NOISE_CLIP)
                 next_action = torch.reshape(torch.clamp((next_action + noise).flatten(), -1, 1), (100, 7))
 
-                # Compute the target Q value
+                # Compute the right_target Q value
                 target_q1, target_q2 = self.critic(state.float(), next_action.float())
                 target_q = torch.min(target_q1, target_q2)
 
@@ -126,7 +126,7 @@ class TD3(object):
                 # print('Actor loss: {}'.format(actor_loss.item()))
                 self.actor_loss_plot.append(actor_loss.item())
 
-                # Update the frozen target models
+                # Update the frozen right_target models
                 for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
                     target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
 
