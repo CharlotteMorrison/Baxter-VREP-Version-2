@@ -29,7 +29,7 @@ class TD3(object):
         self.critic_loss_plot = []
         self.actor_loss_plot = []
 
-    def select_action(self, state, noise=0.02):
+    def select_action(self, state, noise=cons.POLICY_NOISE):
         """Select an appropriate action from the agent policy
             Args:
                 state (array): current state of environment
@@ -38,26 +38,16 @@ class TD3(object):
                 action (list): nn action results
         """
 
-        state = torch.FloatTensor(state).to(cons.DEVICE).unsqueeze(0).unsqueeze(0)
+        state = torch.FloatTensor(state).to(cons.DEVICE)
         action = self.actor(state)
-        action = (torch.randn_like(action) * noise).clamp(-cons.NOISE_CLIP, cons.NOISE_CLIP)
-        return torch.clamp(action, cons.MIN_ACTION, cons.MAX_ACTION).float()
-
-        # for discretized actions
-        # movement = self.convert_action(action)
-        # policy_noise = (torch.randn_like(movement) * noise).clamp(-cons.NOISE_CLIP, cons.NOISE_CLIP)
-        # movement = torch.add(movement, policy_noise)
-        # return action, torch.clamp(movement, cons.MIN_ACTION, cons.MAX_ACTION).float()
-
-    def convert_action(self, action):
-        """ reshape torch.Size([1, 21]) to torch.Size([3, 7)] and map values to movements
-            :param action: torch
-            :return: torch
-        """
-        action = torch.reshape(action, (3, 7))
-        _, index = action.max(0)
-        index = torch.sub(index, 1) * .1
-        return index
+        # action space noise introduces noise to change the likelihoods of each action the agent might take
+        if noise != 0:
+            # creates tensor of gaussian noise
+            noise = torch.clamp(torch.randn(14, dtype=torch.float32, device='cuda') * noise,
+                                min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
+        action = action + noise
+        torch.clamp(action, min=cons.MIN_ACTION, max=cons.MAX_ACTION)
+        return action
 
     def train(self, replay_buffer, iterations):
         """Train and update actor and critic networks
@@ -70,11 +60,16 @@ class TD3(object):
         """
         for it in range(iterations):
             # Sample replay buffer (priority replay)
-            state, action, reward, next_state, done, _, _ = replay_buffer.sample(cons.BATCH_SIZE, beta=0.5)
+            # choose type of replay
+            if cons.PRIORITY:
+                state, action, reward, next_state, done, weights, indexes = replay_buffer.sample(cons.BATCH_SIZE,
+                                                                                     beta=cons.BETA_SCHED.value(it))
+            else:
+                state, action, reward, next_state, done = replay_buffer.sample(cons.BATCH_SIZE)
 
-            state = torch.from_numpy(state).float().to(cons.DEVICE)                 # torch.Size([100, 84, 84])
-            next_state = torch.from_numpy(next_state).float().to(cons.DEVICE)       # torch.Size([100, 84, 84])
-            action = torch.from_numpy(action).float().to(cons.DEVICE)               # torch.Size([100, 7])
+            state = torch.from_numpy(state).float().to(cons.DEVICE)                 # torch.Size([100, 14])
+            next_state = torch.from_numpy(next_state).float().to(cons.DEVICE)       # torch.Size([100, 14])
+            action = torch.from_numpy(action).float().to(cons.DEVICE)               # torch.Size([100, 14])
             reward = torch.as_tensor(reward, dtype=torch.float32).to(cons.DEVICE)   # torch.Size([100])
             done = torch.as_tensor(done, dtype=torch.float32).to(cons.DEVICE)       # torch.Size([100])
 
@@ -137,6 +132,6 @@ class TD3(object):
         torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
         torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
 
-    def load(self, filename="best_avg", directory="./saves"):
+    def load(self, filename="best_avg", directory="td3/saves"):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))

@@ -8,10 +8,12 @@
       <w>egreedy</w>
       <w>hyperparameters</w>
       <w>idxes</w>
+      <w>iters</w>
       <w>optim</w>
       <w>preprocess</w>
       <w>probs</w>
       <w>resized</w>
+      <w>sched</w>
       <w>tanh</w>
       <w>timesteps</w>
       <w>vrep</w>

@@ -1,7 +1,6 @@
 import numpy as np
 import td3.constants as cons
 from utils import output_video, plot_results
-# from utils import stack_frames
 import time
 import psutil
 from utils import plot_loss
@@ -21,7 +20,6 @@ def train(agent, sim, replay_buffer):
             :param agent: (Agent) agent to use, TD3 Algorithm
     """
     # profile = cProfile.Profile()
-    arm = 'right'  # replace later with parameter, or etc. for dual arms
     total_timesteps = 0
     best_avg = -10
     rewards_total_frame = []
@@ -29,7 +27,6 @@ def train(agent, sim, replay_buffer):
     rewards_total_average = []
     actor_loss_episode = []
     critic_loss_episode = []
-    # stacked_frames = 0
     episode = 0
     start_time = time.time()
 
@@ -48,62 +45,63 @@ def train(agent, sim, replay_buffer):
     while total_timesteps < cons.EXPLORATION:
         print('Timesteps: {}/{}.'.format(total_timesteps, cons.EXPLORATION))
         episode += 1
-        state = sim.get_input_image()
+        state = []
+        if cons.MODE == 'cooperative':
+            right_pos, left_pos = sim.get_current_position()
+            state = right_pos + left_pos
+        elif cons.MODE == 'independent':
+            state = []
+            # TODO separate left/right states
 
+        # reset variables
         score = []
         video_array = []
-        distance = sim.calc_distance()
-
         solved = False
         index = 0  # track the number of bad moves made.
+        temp_steps = 0  # tracks the number of tries- if above 30, is done, reset.
 
+        # video recording
         if episode % cons.VIDEO_INTERVAL == 0:
             video_record = True
         else:
             video_record = False
         video_array.append(sim.get_video_image())
-        temp_steps = 0  # tracks the number of tries- if above 30, is done, reset.
+
         while True:
             total_timesteps += 1
 
-            action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()[0]
+            action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()
+            new_state = []
 
-            if arm == 'right':
-                sim.step_right(action)
-            else:
-                sim.step_left(action)
+            if cons.MODE == 'cooperative':
+                right_state = sim.step_right(action[:7])
+                left_state = sim.step_left(action[7:])
+                new_state = right_state + left_state
+            elif cons.MODE == 'independent':
+                new_state = []
+                # TODO add in left
 
-            new_distance = sim.calc_distance()
-            new_state = sim.get_input_image()
             video_array.append(sim.get_video_image())
-            # TODO create a more robust reward, move to function and apply to this and populate
-            # determine reward after movement
 
-            # try using pure distance for reward
-            reward = distance - new_distance
-            if new_distance > distance:
-                index += 1
-            else:
-                index = 0
+            # calculate reward
+            right_reward, left_reward = sim.calc_distance()
+            reward = right_reward + left_reward / 2
 
-            # TODO update for multi-arm
             # check for collision state/ if done
+            right_arm_collision_state = sim.right_collision_state()
+            left_arm_collision_state = sim.left_collision_state()
 
-            right_arm_collision_state = sim.get_collision_state()
-
-            if new_distance < cons.SOLVED_DISTANCE:
+            if right_reward > cons.SOLVED_DISTANCE and left_reward > cons.SOLVED_DISTANCE:
                 done = True
                 solved = True
-            elif right_arm_collision_state:
-                solved = False
+            elif right_arm_collision_state or left_arm_collision_state:
                 done = True
-                reward = -1
+                solved = False
             else:
                 done = False
 
             if index >= 7:
                 done = True
-
             score.append(reward)
             replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward, new_state, done)
 
@@ -114,7 +112,6 @@ def train(agent, sim, replay_buffer):
             # ps.sort_stats('cumtime')
             # ps.print_stats()
             state = new_state
-            distance = new_distance
 
             if solved:
                 print('Solved on Episode: {}'.format(episode))
@@ -157,7 +154,7 @@ def train(agent, sim, replay_buffer):
 
                 if best_avg < mean_reward_100:
                     best_avg = mean_reward_100
-                    agent.save("best_avg", "/saves")
+                    agent.save("best_avg", "td3/saves")
 
                 rewards_total_average.append(mean_reward_all)
 

@@ -26,7 +26,7 @@ ALPHA = .6          # alpha param for priority replay buffer
 BETA = .4           # initial value of beta
 BETA_ITERS = None   # number of iterations over which beta will be annealed from initial value
 EPS = 1e-6          # epsilon to add to the TD errors when updating priorities
-
+BETA_SCHED = None
 # TD3 hyperparameters from addressing function approx. err paper
 EXPLORATION = 5000000
 OBSERVATION = 10000
@@ -36,15 +36,15 @@ BATCH_SIZE = 100
 BUFFER_SIZE = 1000000
 GAMMA = 0.99  # discount
 TAU = 0.005
-POLICY_NOISE = 0.2  # adjusted from .2, due to scale of movement
-NOISE_CLIP = 0.5    # adjusted from .5, due to scale of movement
+POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement
+NOISE_CLIP = 0.05    # adjusted from .5, due to scale of movement
 POLICY_FREQ = 2
 
 # environment parameters
-STATE_DIM = torch.empty(84, 84)
+STATE_DIM = torch.empty(1, 14)
 MAX_ACTION = 0.1
 MIN_ACTION = -0.1
-ACTION_DIM = 7
+ACTION_DIM = 14
 
 
 
