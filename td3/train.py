@@ -178,18 +178,18 @@ def train(agent, sim, replay_buffer):
                         file_episode.write('\n{},{},null,null,{},{},{},{},{},{}'.
                                            format(episode, str(sum(score)), mean_reward_all, total_timesteps,
                                                   time.strftime("%H:%M:%S", time.gmtime(elapsed_time)),
-                                                  solved, distance, system_info.used))
+                                                  solved, reward, system_info.used))
                     elif episode < 100:
                         file_episode.write('\n{},{},{},null,{},{},{},{},{},{}'.
                                            format(episode, str(sum(score)), mean_reward_interval, mean_reward_all,
                                                   total_timesteps, time.strftime("%H:%M:%S", time.gmtime(elapsed_time)),
-                                                  solved, distance, system_info.used))
+                                                  solved, reward, system_info.used))
                     else:
                         file_episode.write('\n{},{},{},{},{},{},{},{},{},{}'.
                                            format(episode, str(sum(score)), mean_reward_interval, mean_reward_100,
                                                   mean_reward_all, total_timesteps,
                                                   time.strftime("%H:%M:%S", time.gmtime(elapsed_time)), solved,
-                                                  distance, system_info.used))
+                                                  reward, system_info.used))
 
                 if episode % cons.REPORT_INTERVAL == 0 and episode > 0:
                     plot_results(rewards_total_episode, cons.PLOT_NAME, 'Episode Total Average Reward')

@@ -75,50 +75,45 @@ class TD3(object):
 
             with torch.no_grad():
                 # select an action according to the policy and add clipped noise
-                # need to select set of actions
+                next_action = self.actor_target(next_state)
+                noise = torch.clamp(torch.randn((100, 14), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
+                                    min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
+                next_action = torch.clamp((next_action + noise), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
 
-                # next_action = torch.reshape(torch.clamp((self.actor_target(next_state.unsqueeze(1))
-                #                             + noise).flatten(), -1, 1), (100, 7))
-
-                next_action = self.actor_target(next_state.unsqueeze(1))
-                noise = (torch.rand_like(next_action) *
-                         cons.POLICY_NOISE).clamp(-cons.NOISE_CLIP, cons.NOISE_CLIP)
-                next_action = torch.reshape(torch.clamp((next_action + noise).flatten(), -1, 1), (100, 7))
-
-                # Compute the right_target Q value
+                # Compute the target Q value
                 target_q1, target_q2 = self.critic(state.float(), next_action.float())
                 target_q = torch.min(target_q1, target_q2)
-
-                target_q = reward + (done * cons.GAMMA * target_q).detach()
+                gamma = torch.ones((100, 1), dtype=torch.float32, device='cuda')
+                gamma = gamma.new_full((100, 1), cons.GAMMA)
+                target_q = reward.unsqueeze(1) + (done.unsqueeze(1) * gamma * target_q).detach()
 
             # get current Q estimates
             current_q1, current_q2 = self.critic(state.float(), action.float())
 
             # compute critic loss
-            critic_loss = F.mse_loss(current_q1,
-                                     target_q[:1, :].transpose(0, 1)) + F.mse_loss(current_q2,
-                                                                                   target_q[:1, :].transpose(0, 1))
+            critic_loss = F.mse_loss(current_q1, target_q) + F.mse_loss(current_q2, target_q)
+
             # optimize the critic
             self.critic_optimizer.zero_grad()
             critic_loss.backward()
             self.critic_optimizer.step()
-            # print('Critic loss: {}'.format(critic_loss.item()))
 
-            self.critic_loss_plot.append(critic_loss.item())
+            # using the minimum of the q values as the weight, use min to prevent overestimation
+            if cons.PRIORITY:
+                new_priorities = torch.min(current_q1, current_q2)
+                replay_buffer.update_priorities(indexes, new_priorities)
+
             # delayed policy updates
             if self.total_it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
 
                 # compute the actor loss
-                q_action = self.actor(state.unsqueeze(1)).float().detach()
-
-                # actor_loss = -self.critic.get_q(state, self.actor(state.unsqueeze(1)).float()).mean()
+                q_action = self.actor(state).float().detach()
                 actor_loss = -self.critic.get_q(state, q_action).mean()
 
                 # optimize the actor
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor_optimizer.step()
-                # print('Actor loss: {}'.format(actor_loss.item()))
                 self.actor_loss_plot.append(actor_loss.item())
 
                 # Update the frozen right_target models
