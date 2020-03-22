@@ -117,8 +117,8 @@ def train(agent, sim, replay_buffer):
                 print('Solved on Episode: {}'.format(episode))
 
             temp_steps += 1
-            if temp_steps == 60:   # stop after 60 attempts, 30 was too low to reach goal, tried 45.
-                done = True  # stop after 60 attempts, was getting stuck flipping from bad to good.
+            if temp_steps == 50:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.
+                done = True  # stop after 50 attempts, was getting stuck flipping from bad to good.
                 temp_steps = 0
 
             system_info = psutil.virtual_memory()
