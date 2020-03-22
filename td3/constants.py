@@ -1,7 +1,7 @@
 import torch
 
 # testing constants
-MAX_EPISODE = 200   # stop the training early and test the results
+MAX_EPISODE = 20   # stop the training early and test the results
 
 # flags
 set_seed = True

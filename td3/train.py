@@ -43,7 +43,7 @@ def train(agent, sim, replay_buffer):
             right_pos, left_pos = sim.get_current_position()
             state = right_pos + left_pos
         elif cons.MODE == 'independent':
-            state = []  # TODO separate left/right states
+            state = []  # TODO separate left/right states, add to evaluations
 
         # video recording
         video_array = []
@@ -72,7 +72,7 @@ def train(agent, sim, replay_buffer):
                 left_state = sim.step_left(action[7:])
                 new_state = right_state + left_state
             elif cons.MODE == 'independent':
-                new_state = []  # TODO add in right and left
+                new_state = []  # TODO add in right and left, add to evaluations
 
             video_array.append(sim.get_video_image())
 

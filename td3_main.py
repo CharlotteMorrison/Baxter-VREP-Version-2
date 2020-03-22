@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from vrepsim import VrepSim
 import td3.constants as cons
-# from td3.evaluate_policy import evaluate_policy
+from evaluate import evaluate_policy
 from td3.experience.priority_replay_buffer import PrioritizedReplayBuffer
 from td3.experience.replay_buffer import ReplayBuffer
 from td3.td3 import TD3
@@ -37,6 +37,5 @@ if __name__ == '__main__':
 
     # possible evaluation
     agent.load()
-    # for i in range(100):
-        # need to pass arm, add arm to evaluate policy
-        # evaluate_policy(agent, sim, "left")
+    for i in range(100):
+        evaluate_policy(agent, sim)
