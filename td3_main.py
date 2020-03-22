@@ -30,8 +30,8 @@ if __name__ == '__main__':
         cons.BETA_SCHED = LinearSchedule(cons.BETA_ITERS, initial_p=cons.BETA, final_p=1.0)
     else:
         replay_buffer = ReplayBuffer()
+
     initialize_min_buffer(sim, replay_buffer)
-    # populate_buffer(sim, replay_buffer)
 
     train(agent, sim, replay_buffer)
 

@@ -100,7 +100,7 @@ class TD3(object):
 
             # using the minimum of the q values as the weight, use min to prevent overestimation
             if cons.PRIORITY:
-                new_priorities = torch.min(current_q1, current_q2)
+                new_priorities = torch.flatten(torch.min(current_q1, current_q2)).tolist()
                 replay_buffer.update_priorities(indexes, new_priorities)
 
             # delayed policy updates
