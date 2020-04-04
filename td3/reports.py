@@ -1,7 +1,7 @@
 import time
 
 
-class report():
+class report:
 
     def __init__(self):
         # open files

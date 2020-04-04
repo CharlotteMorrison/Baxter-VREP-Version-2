@@ -63,8 +63,9 @@ def populate_buffer(sim, replay_buffer):
 
         action = right_action + left_action
         if cons.MODE == 'cooperative':
-            next_state = sim.step_right(right_action)
-            next_state.append(sim.step_left(left_action))
+            right_state = sim.step_right(right_action)
+            left_state = sim.step_left(left_action)
+            next_state = left_state + right_state
         elif cons.MODE == 'independent':
             next_state = sim.step_right(right_action)
             # TODO add in left
@@ -81,10 +82,7 @@ def populate_buffer(sim, replay_buffer):
         else:
             done = False
 
-        # Todo, update reward properly
         # set new reward as average of both rewards
-        print("right reward: {}".format(right_reward))
-        print("left  reward: {}".format(left_reward))
         reward = right_reward + left_reward / 2
 
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,

@@ -31,8 +31,8 @@ if __name__ == '__main__':
     else:
         replay_buffer = ReplayBuffer()
 
-    initialize_min_buffer(sim, replay_buffer)
-
+    # initialize_min_buffer(sim, replay_buffer)
+    populate_buffer(sim, replay_buffer)
     train(agent, sim, replay_buffer)
 
     # possible evaluation
