@@ -37,5 +37,4 @@ if __name__ == '__main__':
 
     # possible evaluation
     agent.load()
-    for i in range(100):
-        evaluate_policy(agent, sim)
+    evaluate_policy(agent, sim)

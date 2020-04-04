@@ -4,10 +4,11 @@ from utils import output_video
 
 def evaluate_policy(policy, sim, eval_episodes=50):
     """run several episodes with the best agent policy"""
-    avg_reward = 0
+    avg_reward = []
 
     for i in range(eval_episodes):
         video_array = []
+        episode_reward = []
         sim.reset_sim()
         video_array.append(sim.get_video_image())
 
@@ -32,7 +33,7 @@ def evaluate_policy(policy, sim, eval_episodes=50):
             # calculate reward
             right_reward, left_reward = sim.calc_distance()
             reward = right_reward + left_reward / 2
-            avg_reward += reward
+            episode_reward.append(reward)
 
             # determine if done
             right_arm_collision_state = sim.right_collision_state()
@@ -47,11 +48,11 @@ def evaluate_policy(policy, sim, eval_episodes=50):
                 done = True
             if num_of_steps > 50:
                 done = True
-
+        avg_reward.append(sum(episode_reward)/len(episode_reward))
         output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
-    avg_reward /= eval_episodes
+    total_avg_reward = sum(avg_reward)/len(avg_reward)
 
     print("\n---------------------------------------")
-    print("Evaluation over {:d} episodes: {:f}" .format(eval_episodes, avg_reward))
+    print("Evaluation over {:d} episodes: {:f}" .format(eval_episodes, total_avg_reward))
     print("---------------------------------------")
     return avg_reward

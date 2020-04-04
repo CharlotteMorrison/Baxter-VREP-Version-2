@@ -27,14 +27,18 @@ class VrepSim(object):
             self.right_joint_org_position = []
             self.left_joint_org_position = []
 
-            # input videos and campera
+            # input videos and camera
             error_code, self.input_cam = vrep.simxGetObjectHandle(self.clientID, 'input_camera',
                                                                   vrep.simx_opmode_oneshot_wait)
             error_code, self.video_cam = vrep.simxGetObjectHandle(self.clientID, 'video_camera',
                                                                   vrep.simx_opmode_oneshot_wait)
-            # main right_target
-            error_code, self.main_target = vrep.simxGetObjectHandle(self.clientID, 'right_target',
+            # main target
+            # get the coordinates for start (0, 0, 0)/ reward these are not the same as the reset coordinates.
+            error_code, self.main_target = vrep.simxGetObjectHandle(self.clientID, 'target',
                                                                     vrep.simx_opmode_oneshot_wait)
+            # get the euler angles of the main target, used to reset the object
+            error_code, self.main_target_angles = vrep.simxGetObjectOrientation(self.clientID, self.main_target, -1,
+                                                                                vrep.simx_opmode_streaming)
 
             # right arm
             error_code, self.right_hand = vrep.simxGetObjectHandle(self.clientID, 'Baxter_rightArm_camera',
@@ -42,24 +46,23 @@ class VrepSim(object):
             error_code, self.right_target = vrep.simxGetObjectHandle(self.clientID, 'right_target',
                                                                      vrep.simx_opmode_oneshot_wait)
             error, self.right_arm_collision_target = vrep.simxGetCollisionHandle(self.clientID,
-                                                                                 "right_arm_collision_target#",
+                                                                                 "right_collision_target",
                                                                                  vrep.simx_opmode_blocking)
             error, self.right_arm_collision_table = vrep.simxGetCollisionHandle(self.clientID,
-                                                                                "right_arm_collision_table#",
+                                                                                "right_collision_table",
                                                                                 vrep.simx_opmode_blocking)
-
             # left arm
             error_code, self.left_hand = vrep.simxGetObjectHandle(self.clientID, 'Baxter_leftArm_camera',
                                                                   vrep.simx_opmode_oneshot_wait)
-            error_code, self.left_target = vrep.simxGetObjectHandle(self.clientID, 'leftt_target',
+
+            error_code, self.left_target = vrep.simxGetObjectHandle(self.clientID, 'left_target',
                                                                     vrep.simx_opmode_oneshot_wait)
             error, self.left_arm_collision_target = vrep.simxGetCollisionHandle(self.clientID,
-                                                                                "left_arm_collision_target#",
+                                                                                "left_collision_target",
                                                                                 vrep.simx_opmode_blocking)
             error, self.left_arm_collision_table = vrep.simxGetCollisionHandle(self.clientID,
-                                                                               "left_arm_collision_table#",
+                                                                               "left_collision_table",
                                                                                vrep.simx_opmode_blocking)
-
             # Used to translate action to joint array position
             self.joint_switch = {0: 0, 1: 0, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4, 10: 5, 11: 5, 12: 6, 13: 6}
 
@@ -98,8 +101,10 @@ class VrepSim(object):
             error_code, self.left_xyz_target = vrep.simxGetObjectPosition(self.clientID, self.left_target, -1,
                                                                           vrep.simx_opmode_streaming)
 
+            # main target for single point goal
             error_code, self.xyz_main_target = vrep.simxGetObjectPosition(self.clientID, self.main_target, -1,
                                                                           vrep.simx_opmode_streaming)
+
             vrep.simxGetVisionSensorImage(self.clientID, self.input_cam, 0, vrep.simx_opmode_streaming)
             vrep.simxGetVisionSensorImage(self.clientID, self.video_cam, 0, vrep.simx_opmode_streaming)
 
@@ -209,13 +214,14 @@ class VrepSim(object):
         error_code, self.right_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.right_hand, -1,
                                                                      vrep.simx_opmode_buffer)  # right hand
         error_code, self.left_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.left_hand, -1,
-                                                                     vrep.simx_opmode_buffer)  # left hand
+                                                                    vrep.simx_opmode_buffer)  # left hand
 
         # removed getting right_target location each time- using the static initial location
         # error_code, self.right_xyz_target = vrep.simxGetObjectPosition(self.clientID, self.right_target, -1,
         #                                                          vrep.simx_opmode_buffer)
         # TODO set this to main target, find static point.
         # need to check if this formula is calculating distance properly
+
         right_distance = 1 / math.sqrt(
             pow((self.right_xyz_hand[0] - self.right_xyz_target[0]), 2) +
             pow((self.right_xyz_hand[1] - self.right_xyz_target[1]), 2) +
@@ -272,14 +278,16 @@ class VrepSim(object):
         plt.imshow(image)
 
     def reset_sim(self):
+        time.sleep(.5)  # moved sleep to the top to allow other actions to finish before reset
         for x in range(0, 7):
             vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], self.right_joint_org_position[x],
                                             vrep.simx_opmode_oneshot_wait)
             vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], self.left_joint_org_position[x],
                                             vrep.simx_opmode_oneshot_wait)
-        time.sleep(1)
+        self.reset_target_object(0.1250, 0.0, 0.9)
 
     def full_sim_reset(self):
+        # resets and ends simulation
         vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_blocking)
         is_running = True
         while is_running:
@@ -289,4 +297,11 @@ class VrepSim(object):
                 is_running = False
         vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
         time.sleep(1)
+
+    def reset_target_object(self, x, y, z):
+        error_code = vrep.simxSetObjectPosition(self.clientID, self.main_target, -1, [x, y, z],
+                                                vrep.simx_opmode_oneshot)
+        time.sleep(.1)  # needs a brief pause or it is skipped.
+        error_code = vrep.simxSetObjectOrientation(self.clientID, self.main_target, -1, self.main_target_angles,
+                                                   vrep.simx_opmode_oneshot)
 
