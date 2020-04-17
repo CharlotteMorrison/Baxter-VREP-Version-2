@@ -78,7 +78,7 @@ def train(agent, sim, replay_buffer):
 
             # calculate reward
             right_reward, left_reward = sim.calc_distance()
-            reward = right_reward + left_reward / 2
+            reward = (right_reward + left_reward) / 2
 
             # check for collision state/ if done
             right_arm_collision_state = sim.right_collision_state()

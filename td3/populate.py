@@ -16,9 +16,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-1.pkl"
     else:
-        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer.pkl"
+        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer-1.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -83,7 +83,7 @@ def populate_buffer(sim, replay_buffer):
             done = False
 
         # set new reward as average of both rewards
-        reward = right_reward + left_reward / 2
+        reward = (right_reward + left_reward) / 2
 
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
@@ -99,12 +99,12 @@ def populate_buffer(sim, replay_buffer):
             pickle.dump(buffer_storage, save_buffer)
             save_buffer.close()
             buffer_storage = []
-            sim.reset_sim()  # reset simulation after 25 movements
-        if x % 100 == 0 and x < cons.BUFFER_SIZE - 100:
-            replay_counter += 100
-            print("{} of {} loaded".format(replay_counter, cons.BUFFER_SIZE))
+            # sim.reset_sim()  # reset simulation after 25 movements
+        if x % 1000 == 0 and x < cons.BUFFER_SIZE - 100 and x != 0:
+            sim.reset_sim()  # moved to every 1000 iterations, to allow for more diverse movement sets
+            print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
         elif x == cons.BUFFER_SIZE:
-            print("{} of {} loaded".format(replay_counter, cons.BUFFER_SIZE))
+            print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
 
     print("\nExperience replay buffer initialized.")
 

@@ -102,7 +102,7 @@ class TD3(object):
             if cons.PRIORITY:
                 new_priorities = torch.flatten(torch.min(current_q1, current_q2))
                 # convert any negative priorities to a minimum value, can't have a negative priority
-                new_priorities = torch.clamp(new_priorities, min=0.0001).tolist()  # convert to a list for storage
+                new_priorities = torch.clamp(new_priorities, min=0.0000001).tolist()  # convert to a list for storage
                 replay_buffer.update_priorities(indexes, new_priorities)
 
             # delayed policy updates

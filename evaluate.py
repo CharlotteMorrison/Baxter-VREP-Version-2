@@ -46,7 +46,7 @@ def evaluate_policy(policy, sim, eval_episodes=50):
                 done = True
             if index >= 5:
                 done = True
-            if num_of_steps > 50:
+            if num_of_steps > 200:  # needs to run longer to get near the target
                 done = True
         avg_reward.append(sum(episode_reward)/len(episode_reward))
         output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
