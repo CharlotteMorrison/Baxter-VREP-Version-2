@@ -1,7 +1,7 @@
 import math
 
 
-def arm_distance_reward(left_dist, right_dist):
+def arm_distance_reward(right_dist, left_dist):
     """
     Calculates the average distance of the right and left end joints to a given target.
     :param left_dist: distance of left arm to target

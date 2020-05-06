@@ -5,6 +5,7 @@ from td3.reports import report
 import time
 import psutil
 import torch
+from td3.rewards import *
 
 
 def train(agent, sim, replay_buffer):
@@ -38,12 +39,8 @@ def train(agent, sim, replay_buffer):
         steps_in_episode = 0  # counts the number of step in the episode
 
         # get the current state  of the robot arms (joint angles)
-        state = []
-        if cons.MODE == 'cooperative':
-            right_pos, left_pos = sim.get_current_position()
-            state = right_pos + left_pos
-        elif cons.MODE == 'independent':
-            state = []  # TODO separate left/right states, add to evaluations
+        right_pos, left_pos = sim.get_current_position()
+        state = right_pos + left_pos
 
         # video recording
         video_array = []
@@ -62,23 +59,33 @@ def train(agent, sim, replay_buffer):
             total_timesteps += 1
             steps_in_episode += 1
 
-            # get a new action based on policy
-            action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()
-
-            # apply action to robot and get new state
             new_state = []
             if cons.MODE == 'cooperative':
+                # get a new action based on policy
+                action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()
+
+                # apply the action and get the new state
                 right_state = sim.step_right(action[:7])
                 left_state = sim.step_left(action[7:])
                 new_state = right_state + left_state
             elif cons.MODE == 'independent':
-                new_state = []  # TODO add in right and left, add to evaluations
+                right_action = agent.select_action(np.array(state)[:7], noise=cons.POLICY_NOISE).tolist()
+                left_action = agent.select_action(np.array(state)[7:], noise=cons.POLICY_NOISE).tolist()
 
+                # apply the action and get the new state
+                right_state = sim.step_right(right_action)
+                left_state = sim.step_left(left_action)
+                new_state = right_state + left_state
+
+                # store the actions together in the replay
+                action = right_action + left_action
+
+            # add the image to the video array
             video_array.append(sim.get_video_image())
 
             # calculate reward
             right_reward, left_reward = sim.calc_distance()
-            reward = (right_reward + left_reward) / 2
+            reward = arm_distance_reward(right_reward, left_reward)
 
             # check for collision state/ if done
             right_arm_collision_state = sim.right_collision_state()
