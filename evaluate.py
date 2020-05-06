@@ -2,7 +2,7 @@ import td3.constants as cons
 from utils import output_video
 
 
-def evaluate_policy(policy, sim, eval_episodes=50):
+def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
     """run several episodes with the best agent policy"""
     avg_reward = []
 
@@ -15,7 +15,6 @@ def evaluate_policy(policy, sim, eval_episodes=50):
         right_pos, left_pos = sim.get_current_position()
         state = right_pos + left_pos
         done = False
-        index = 0
         num_of_steps = 0
 
         # run policy
@@ -32,9 +31,9 @@ def evaluate_policy(policy, sim, eval_episodes=50):
 
             # calculate reward
             right_reward, left_reward = sim.calc_distance()
-            reward = right_reward + left_reward / 2
+            reward = (right_reward + left_reward) / 2
             episode_reward.append(reward)
-
+            print(reward)
             # determine if done
             right_arm_collision_state = sim.right_collision_state()
             left_arm_collision_state = sim.left_collision_state()
@@ -44,9 +43,7 @@ def evaluate_policy(policy, sim, eval_episodes=50):
                 done = True
             if right_arm_collision_state or left_arm_collision_state:
                 done = True
-            if index >= 5:
-                done = True
-            if num_of_steps > 200:  # needs to run longer to get near the target
+            if num_of_steps > episode_length:  # needs to run longer to get near the target
                 done = True
         avg_reward.append(sum(episode_reward)/len(episode_reward))
         output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
