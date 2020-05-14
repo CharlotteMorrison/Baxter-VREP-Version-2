@@ -90,14 +90,28 @@ class TD3SharedCritic(object):
             reward = torch.as_tensor(reward, dtype=torch.float32).to(cons.DEVICE)   # torch.Size([100])
             done = torch.as_tensor(done, dtype=torch.float32).to(cons.DEVICE)       # torch.Size([100])
 
+            # split the state, next_state, and action into 2 stored in a list
+            states = torch.chunk(state, 2, 1)
+            next_states = torch.chunk(next_state, 2, 1)
+            actions = torch.chunk(action, 2, 1)
+
             with torch.no_grad():
                 # select an action according to the policy and add clipped noise
-                next_action = self.actor_target(next_state)
-                noise = torch.clamp(torch.randn((100, 14), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
-                                    min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
-                next_action = torch.clamp((next_action + noise), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
+                next_action_1 = self.actor_target_1(next_states[0])
+                next_action_2 = self.actor_target_2(next_states[1])
+
+                noise_1 = torch.clamp(torch.randn((100, 14), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
+                                      min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
+                next_action_1 = torch.clamp((next_action_1 + noise_1), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
+
+                noise_2 = torch.clamp(torch.randn((100, 7), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
+                                      min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
+                next_action_2 = torch.clamp((next_action_2 + noise_2), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
+
+
 
                 # Compute the target Q value
+                next_action = torch.cat((next_action_1, next_action_2), 1)
                 target_q1, target_q2 = self.critic(state.float(), next_action.float())
                 target_q = torch.min(target_q1, target_q2)
                 gamma = torch.ones((100, 1), dtype=torch.float32, device='cuda')
@@ -125,27 +139,41 @@ class TD3SharedCritic(object):
             # delayed policy updates
             if self.total_it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
 
-                # compute the actor loss
-                q_action = self.actor(state).float().detach()
-                actor_loss = -self.critic.get_q(state, q_action).mean()
+                # compute the actor 1 loss
+                q_action_1 = self.actor_1(states[0]).float().detach()
+                q_action_2 = self.actor_2(states[1]).float().detach()
+
+                actor_loss_1 = -self.critic.get_q(states[0], q_action_1).mean()
+                actor_loss_2 = -self.critic.get_q(states[1], q_action_2).mean()
 
                 # optimize the actor
-                self.actor_optimizer.zero_grad()
-                actor_loss.backward()
-                self.actor_optimizer.step()
-                self.actor_loss_plot.append(actor_loss.item())
+                self.actor_optimizer_1.zero_grad()
+                self.actor_optimizer_2.zero_grad()
+                actor_loss_1.backward()
+                actor_loss_2.backward()
+                self.actor_optimizer_1.step()
+                self.actor_optimizer_2.step()
 
-                # Update the frozen right_target models
+                # store the loss
+                self.actor_loss_plot_1.append(actor_loss_1.item())
+                self.actor_loss_plot_2.append(actor_loss_2.item())
+
+                # Update the frozen target models
                 for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
                     target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
 
-                for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+                for param, target_param in zip(self.actor_1.parameters(), self.actor_target_1.parameters()):
+                    target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
+
+                for param, target_param in zip(self.actor_2.parameters(), self.actor_target_2.parameters()):
                     target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
 
     def save(self, filename, directory):
-        torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
+        torch.save(self.actor_1.state_dict(), '%s/%s_actor_1.pth' % (directory, filename))
+        torch.save(self.actor_2.state_dict(), '%s/%s_actor_2.pth' % (directory, filename))
         torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
 
     def load(self, filename="best_avg", directory="td3/saves"):
-        self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
+        self.actor_1.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
+        self.actor_2.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))

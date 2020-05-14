@@ -20,6 +20,8 @@ def train(agent, sim, replay_buffer):
     episode = 0
     start_time = time.time()
 
+    loc = 'td3/saves'
+
     # lists storage for result tracking
     rewards = []                # every step reward
     episode_rewards = []        # the average reward for each episode
@@ -61,6 +63,7 @@ def train(agent, sim, replay_buffer):
 
             new_state = []
             if cons.MODE == 'cooperative':
+                loc = 'td3/saves/shared_agent'
                 # get a new action based on policy
                 action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()
 
@@ -69,6 +72,7 @@ def train(agent, sim, replay_buffer):
                 left_state = sim.step_left(action[7:])
                 new_state = right_state + left_state
             elif cons.MODE == 'independent':
+                loc = 'td3/saves/dual_agent'
                 right_action = agent.select_action(np.array(state)[:7], noise=cons.POLICY_NOISE).tolist()
                 left_action = agent.select_action(np.array(state)[7:], noise=cons.POLICY_NOISE).tolist()
 
@@ -145,7 +149,7 @@ def train(agent, sim, replay_buffer):
                 # if current episodes reward better, becomes new save
                 if best_avg < mean_reward_episode:
                     best_avg = mean_reward_episode
-                    agent.save("best_avg", "td3/saves")
+                    agent.save("best_avg", loc)
 
                 # save the progress for graphing
                 episode_rewards.append(mean_reward_episode)

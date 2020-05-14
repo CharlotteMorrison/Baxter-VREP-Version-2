@@ -1,0 +1,18 @@
+Right Starting Position
+[9.5367431640625e-07, 0.00014925003051757812, 2.384185791015625e-07, -2.384185791015625e-07, 1.1920928955078125e-06, -7.152557373046875e-07, 0.0]
+Left Starting Position
+[0.0, 0.00028061866760253906, -2.384185791015625e-07, 0.000125885009765625, 0.0, 6.437301635742188e-05, 0.0]
+
+Starting Reward
+Right 	0.6305724583070158
+Left	0.6396544050559845
+
+1 - avg = approx .37
+
+Profile Algorithm
+            # profile.enable()
+            agent.train(replay_buffer, cons.BATCH_SIZE)
+            # profile.disable()
+            # ps = pstats.Stats(profile)
+            # ps.sort_stats('cumtime')
+            # ps.print_stats()

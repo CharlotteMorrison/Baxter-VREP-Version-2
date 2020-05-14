@@ -24,6 +24,8 @@ def target_movement_reward(start_loc, end_loc,  target_loc):
     (x2, y2, z2) = end_loc
     (x3, y3, z3) = target_loc
 
+    # TODO change in distance to target
+
     distance_moved = math.sqrt(math.pow(x2 - x1, 2) +
                                math.pow(y2 - y1, 2) +
                                math.pow(z2 - z1, 2) * 1.0)
