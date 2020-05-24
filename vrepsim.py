@@ -18,6 +18,7 @@ class VrepSim(object):
 
         # Create Var for client connection
         self.clientID = vrep.simxStart('127.0.0.1', 19999, True, True, 5000, 5)
+        self.one_arm_mode = ''
 
         if self.clientID != -1:
             print('Connected to remote API server')
@@ -122,6 +123,9 @@ class VrepSim(object):
             error_code, self.left_arm_collision_state_table = vrep.simxReadCollision(self.clientID,
                                                                                      self.left_arm_collision_table,
                                                                                      vrep.simx_opmode_streaming)
+            # enable vacuum cups
+            vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup_active', 1, vrep.simx_opmode_oneshot)
+            vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup#0_active', 1, vrep.simx_opmode_oneshot)
             time.sleep(1)
 
         else:
@@ -179,17 +183,17 @@ class VrepSim(object):
                                                              vrep.simx_opmode_buffer)
             start_position.append(temp_pos)
             new_position.append(temp_pos + action[x])
-            vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], new_position[x],
-                                            vrep.simx_opmode_oneshot_wait)
+            if self.one_arm_mode == 'right':
+                vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], new_position[x],
+                                                vrep.simx_opmode_oneshot_wait)
+
         return new_position
-        # time.sleep(0.1)
 
     def step_left(self, action):
         """Applies an array of actions to all left joint positions.
            Args:
                action (list): increments to add to robot position (-0.1, 0, 0.1)
         """
-
         # get position of arm, increment by values, then move robot
         start_position = []
         new_position = []
@@ -199,10 +203,22 @@ class VrepSim(object):
                                                              vrep.simx_opmode_buffer)
             start_position.append(temp_pos)
             new_position.append(temp_pos + action[x])
-            vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], new_position[x],
-                                            vrep.simx_opmode_oneshot_wait)
+            if self.one_arm_mode == 'left':
+                vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], new_position[x],
+                                                vrep.simx_opmode_oneshot_wait)
         return new_position
-        # time.sleep(0.1)
+
+    def step_arms(self, right_action, left_action):
+        right_new_position = self.step_right(right_action)
+        left_new_position = self.step_left(left_action)
+
+        # move the arm joints
+        for x in range(0, 7):
+            vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], right_new_position[x],
+                                            vrep.simx_opmode_oneshot_wait)
+            vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], left_new_position[x],
+                                            vrep.simx_opmode_oneshot_wait)
+        return right_new_position, left_new_position
 
     def calc_distance(self):
         """Calculates the distance between the end effector and a target position
@@ -279,12 +295,17 @@ class VrepSim(object):
 
     def reset_sim(self):
         time.sleep(.5)  # moved sleep to the top to allow other actions to finish before reset
+        vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup_active', 0, vrep.simx_opmode_oneshot)
+        vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup#0_active', 0, vrep.simx_opmode_oneshot)
         for x in range(0, 7):
             vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], self.right_joint_org_position[x],
                                             vrep.simx_opmode_oneshot_wait)
             vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], self.left_joint_org_position[x],
                                             vrep.simx_opmode_oneshot_wait)
+
         self.reset_target_object(0.1250, 0.0, 0.9)
+        vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup_active', 1, vrep.simx_opmode_oneshot)
+        vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup#0_active', 1, vrep.simx_opmode_oneshot)
 
     def full_sim_reset(self):
         # resets and ends simulation
@@ -301,7 +322,7 @@ class VrepSim(object):
     def reset_target_object(self, x, y, z):
         error_code = vrep.simxSetObjectPosition(self.clientID, self.main_target, -1, [x, y, z],
                                                 vrep.simx_opmode_oneshot)
-        time.sleep(.1)  # needs a brief pause or it is skipped.
+        time.sleep(.2)  # needs a brief pause or it is skipped, don't make this less... it won't put it back right!
         error_code = vrep.simxSetObjectOrientation(self.clientID, self.main_target, -1, self.main_target_angles,
                                                    vrep.simx_opmode_oneshot)
 

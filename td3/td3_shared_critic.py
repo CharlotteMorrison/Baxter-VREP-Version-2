@@ -10,29 +10,28 @@ class TD3SharedCritic(object):
     """Agent class that handles the training of the networks
     and provides outputs as actions.
     """
-    # notes- still using 1 replay buffer
-    # both actors are trained in each step together, right then left
     #
     def __init__(self):
-        state_dim = cons.STATE_DIM.flatten().shape[0]
-        self.action_dim_actor = cons.ACTION_DIM / 2
+        critic_state_dim = cons.STATE_DIM.flatten().shape[0]
+        actor_state_dim = int(cons.STATE_DIM.flatten().shape[0] / 2)
+        self.action_dim_actor = int(cons.ACTION_DIM / 2)
         self.action_dim_critic = cons.ACTION_DIM
 
         # actor 1 right arm
-        self.actor_1 = Actor(state_dim, self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
-        self.actor_target_1 = Actor(state_dim,  self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
+        self.actor_1 = Actor(actor_state_dim, self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
+        self.actor_target_1 = Actor(actor_state_dim,  self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
         self.actor_target_1.load_state_dict(self.actor_1.state_dict())
         self.actor_optimizer_1 = torch.optim.Adam(self.actor_1.parameters(), lr=3e-4)  # or 1e-3
 
         # actor 2 left arm
-        self.actor_2 = Actor(state_dim, self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
-        self.actor_target_2 = Actor(state_dim,  self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
+        self.actor_2 = Actor(actor_state_dim, self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
+        self.actor_target_2 = Actor(actor_state_dim,  self.action_dim_actor, cons.MAX_ACTION).to(cons.DEVICE)
         self.actor_target_2.load_state_dict(self.actor_2.state_dict())
         self.actor_optimizer_2 = torch.optim.Adam(self.actor_2.parameters(), lr=3e-4)  # or 1e-3
 
         # shared critic
-        self.critic = Critic(state_dim,  self.action_dim_critic).to(cons.DEVICE)
-        self.critic_target = Critic(state_dim,  self.action_dim_critic).to(cons.DEVICE)
+        self.critic = Critic(critic_state_dim,  self.action_dim_critic).to(cons.DEVICE)
+        self.critic_target = Critic(critic_state_dim,  self.action_dim_critic).to(cons.DEVICE)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=3e-4)  # or 1e-3
 
@@ -93,22 +92,19 @@ class TD3SharedCritic(object):
             # split the state, next_state, and action into 2 stored in a list
             states = torch.chunk(state, 2, 1)
             next_states = torch.chunk(next_state, 2, 1)
-            actions = torch.chunk(action, 2, 1)
 
             with torch.no_grad():
                 # select an action according to the policy and add clipped noise
                 next_action_1 = self.actor_target_1(next_states[0])
                 next_action_2 = self.actor_target_2(next_states[1])
 
-                noise_1 = torch.clamp(torch.randn((100, 14), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
+                noise_1 = torch.clamp(torch.randn((100, 7), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
                                       min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_1 = torch.clamp((next_action_1 + noise_1), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
 
                 noise_2 = torch.clamp(torch.randn((100, 7), dtype=torch.float32, device='cuda') * cons.POLICY_NOISE,
                                       min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_2 = torch.clamp((next_action_2 + noise_2), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
-
-
 
                 # Compute the target Q value
                 next_action = torch.cat((next_action_1, next_action_2), 1)
@@ -139,30 +135,29 @@ class TD3SharedCritic(object):
             # delayed policy updates
             if self.total_it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
 
-                # compute the actor 1 loss
+                # compute the actor loss
                 q_action_1 = self.actor_1(states[0]).float().detach()
                 q_action_2 = self.actor_2(states[1]).float().detach()
+                q_action = torch.cat((q_action_1, q_action_2), 1)
+                actor_loss_1 = -self.critic.get_q(state, q_action).mean()
+                actor_loss_2 = actor_loss_1.clone()
 
-                actor_loss_1 = -self.critic.get_q(states[0], q_action_1).mean()
-                actor_loss_2 = -self.critic.get_q(states[1], q_action_2).mean()
-
-                # optimize the actor
+                # optimize the actors
                 self.actor_optimizer_1.zero_grad()
-                self.actor_optimizer_2.zero_grad()
-                actor_loss_1.backward()
-                actor_loss_2.backward()
+                actor_loss_1.backward(retain_graph=True)
                 self.actor_optimizer_1.step()
-                self.actor_optimizer_2.step()
-
-                # store the loss
                 self.actor_loss_plot_1.append(actor_loss_1.item())
+
+                self.actor_optimizer_2.zero_grad()
+                actor_loss_2.backward()
+                self.actor_optimizer_2.step()
                 self.actor_loss_plot_2.append(actor_loss_2.item())
 
-                # Update the frozen target models
+                # Update the frozen right_target models
                 for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
                     target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
 
-                for param, target_param in zip(self.actor_1.parameters(), self.actor_target_1.parameters()):
+                for param, target_param in zip(self.actor_1.parameters(), self.actor_target_2.parameters()):
                     target_param.data.copy_(cons.TAU * param.data + (1 - cons.TAU) * target_param.data)
 
                 for param, target_param in zip(self.actor_2.parameters(), self.actor_target_2.parameters()):
@@ -174,6 +169,6 @@ class TD3SharedCritic(object):
         torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
 
     def load(self, filename="best_avg", directory="td3/saves"):
-        self.actor_1.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
-        self.actor_2.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
+        self.actor_1.load_state_dict(torch.load('%s/%s_actor_1.pth' % (directory, filename)))
+        self.actor_2.load_state_dict(torch.load('%s/%s_actor_2.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))

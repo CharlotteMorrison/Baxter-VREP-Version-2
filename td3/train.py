@@ -66,19 +66,17 @@ def train(agent, sim, replay_buffer):
                 loc = 'td3/saves/shared_agent'
                 # get a new action based on policy
                 action = agent.select_action(np.array(state), noise=cons.POLICY_NOISE).tolist()
-
                 # apply the action and get the new state
-                right_state = sim.step_right(action[:7])
-                left_state = sim.step_left(action[7:])
+                right_state, left_state = sim.step_arms(action[:7], action[7:])
                 new_state = right_state + left_state
+
             elif cons.MODE == 'independent':
                 loc = 'td3/saves/dual_agent'
-                right_action = agent.select_action(np.array(state)[:7], noise=cons.POLICY_NOISE).tolist()
-                left_action = agent.select_action(np.array(state)[7:], noise=cons.POLICY_NOISE).tolist()
+                right_action = agent.select_action(np.array(state)[:7], 'right', noise=cons.POLICY_NOISE).tolist()
+                left_action = agent.select_action(np.array(state)[7:], 'left', noise=cons.POLICY_NOISE).tolist()
 
                 # apply the action and get the new state
-                right_state = sim.step_right(right_action)
-                left_state = sim.step_left(left_action)
+                right_state, left_state = sim.step_arms(right_action, left_action)
                 new_state = right_state + left_state
 
                 # store the actions together in the replay

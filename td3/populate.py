@@ -62,13 +62,9 @@ def populate_buffer(sim, replay_buffer):
             left_action.append(random.choice(value))
 
         action = right_action + left_action
-        if cons.MODE == 'cooperative':
-            right_state = sim.step_right(right_action)
-            left_state = sim.step_left(left_action)
-            next_state = left_state + right_state
-        elif cons.MODE == 'independent':
-            next_state = sim.step_right(right_action)
-            # TODO add in left
+
+        right_state, left_state = sim.step_arms(right_action, left_action)
+        next_state = right_state + left_state
 
         right_reward, left_reward = sim.calc_distance()
 
@@ -84,7 +80,6 @@ def populate_buffer(sim, replay_buffer):
 
         # set new reward as average of both rewards
         reward = (right_reward + left_reward) / 2
-
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
 

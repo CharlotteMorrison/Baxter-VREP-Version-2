@@ -26,8 +26,9 @@ def initialize_min_buffer(sim, replay_buffer):
             next_state = right_state + left_state
 
         elif cons.MODE == 'independent':
-            next_state = sim.step_right(right_action)
-            # TODO add in left
+            right_state = sim.step_right(right_action)
+            left_state = sim.step_left(left_action)
+            next_state = right_state + left_state
 
         right_reward, left_reward = sim.calc_distance()
 

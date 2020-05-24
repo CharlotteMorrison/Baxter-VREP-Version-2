@@ -2,11 +2,11 @@ import torch
 from datetime import date
 
 # testing constants
-MAX_EPISODE = 2000  # stop the training early and test the results
+MAX_EPISODE = 50  # stop the training early and test the results
 
 # flags
 set_seed = True
-MODE = 'cooperative'  # cooperative combines actions for training, independent uses two sep. actions
+MODE = 'independent'  # cooperative combines actions for training, independent uses two sep. actions
 
 DEFAULT_NAME = "Baxter_TD3"
 model_file = "td3/results/models/" + DEFAULT_NAME + "_model" + date.today().strftime("%b-%d-%Y") + ".pth"
@@ -41,7 +41,7 @@ OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
 REWARD_THRESH = 1.10
 BATCH_SIZE = 100
-BUFFER_SIZE = 100000  # shrunk from 1,000,000
+BUFFER_SIZE = 26000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount
 TAU = 0.005
 POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement

@@ -24,8 +24,7 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             action = policy.select_action(state, noise=0)
 
             # apply action and get new state
-            right_state = sim.step_right(action[:7])
-            left_state = sim.step_left(action[7:])
+            right_state, left_state = sim.step_arms(action[:7], action[7:])
             state = right_state + left_state
             video_array.append(sim.get_video_image())
 
