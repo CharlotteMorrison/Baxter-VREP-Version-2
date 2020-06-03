@@ -5,6 +5,7 @@ import torch
 import td3.constants as cons
 import psutil
 import platform
+import td3.rewards as rew
 
 
 def populate_buffer(sim, replay_buffer):
@@ -16,9 +17,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-1.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-1-suction.pkl"
     else:
-        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer-1.pkl"
+        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer-1-suction.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -51,6 +52,8 @@ def populate_buffer(sim, replay_buffer):
 
     for x in range(buffer):
 
+        target_start = sim.get_target_position()
+
         right_pos, left_pos = sim.get_current_position()
         state = right_pos + left_pos
 
@@ -66,20 +69,37 @@ def populate_buffer(sim, replay_buffer):
         right_state, left_state = sim.step_arms(right_action, left_action)
         next_state = right_state + left_state
 
-        right_reward, left_reward = sim.calc_distance()
-
         right_arm_collision_state = sim.right_collision_state()
         left_arm_collision_state = sim.left_collision_state()
 
+        ''' old reward for moving arms towards a target
+        right_reward, left_reward = sim.calc_distance()
         if right_reward > cons.SOLVED_DISTANCE or left_reward > cons.SOLVED_DISTANCE:
             done = True
         elif right_arm_collision_state or left_arm_collision_state:
             done = True
         else:
             done = False
-
         # set new reward as average of both rewards
         reward = (right_reward + left_reward) / 2
+        '''
+
+        target_end = sim.get_target_position()
+        target_x, target_y, target_z = target_end
+        reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+
+        # removed collision state checking may add back in to check for box collision with the table.
+
+        if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
+                round(target_z, 2) == cons.XYZ_GOAL[2]:
+            # end the episode if the target is reached, might be too restrictive- maybe round all to one decimal place
+            done = True
+        elif x != 0 and x % 100 == 0:
+            # end the episode after 100 movements
+            done = True
+        else:
+            done = False
+
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
 

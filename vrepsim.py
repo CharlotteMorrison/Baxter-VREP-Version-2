@@ -218,7 +218,18 @@ class VrepSim(object):
                                             vrep.simx_opmode_oneshot_wait)
             vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], left_new_position[x],
                                             vrep.simx_opmode_oneshot_wait)
+        time.sleep(1)
         return right_new_position, left_new_position
+
+    def get_target_position(self):
+        error_code, xyz_position = vrep.simxGetObjectPosition(self.clientID, self.main_target, -1,
+                                                              vrep.simx_opmode_streaming)
+        return xyz_position
+
+    def get_target_angles(self):
+        error_code, target_angles = vrep.simxGetObjectOrientation(self.clientID, self.main_target, -1,
+                                                                  vrep.simx_opmode_streaming)
+        return target_angles
 
     def calc_distance(self):
         """Calculates the distance between the end effector and a target position
@@ -256,7 +267,7 @@ class VrepSim(object):
         error_code, self.right_arm_collision_state_table = vrep.simxReadCollision(self.clientID,
                                                                                   self.right_arm_collision_table,
                                                                                   vrep.simx_opmode_buffer)
-        if self.right_arm_collision_state_target or self.right_arm_collision_state_table:
+        if self.right_arm_collision_state_table:  # or self.right_arm_collision_state_target:
             return True
         else:
             return False
@@ -268,7 +279,7 @@ class VrepSim(object):
         error_code, self.left_arm_collision_state_table = vrep.simxReadCollision(self.clientID,
                                                                                  self.left_arm_collision_table,
                                                                                  vrep.simx_opmode_buffer)
-        if self.left_arm_collision_state_target or self.left_arm_collision_state_table:
+        if self.left_arm_collision_state_table:  # or self.left_arm_collision_state_target:
             return True
         else:
             return False
@@ -304,8 +315,23 @@ class VrepSim(object):
                                             vrep.simx_opmode_oneshot_wait)
 
         self.reset_target_object(0.1250, 0.0, 0.9)
+        time.sleep(1)
+        # reset the suction grippers
         vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup_active', 1, vrep.simx_opmode_oneshot)
         vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup#0_active', 1, vrep.simx_opmode_oneshot)
+        # pick up the box
+        # self.step_arms([.608, .45, 0, 0, -1.6, -1.5, 0], [-.605, .45, 0, 0, 1.6, -1.5, 0])
+        self.step_arms([0, .45, 0, 0, -1.6, -1.5, 0], [0, .45, 0, 0, 1.6, -1.5, 0])
+        self.step_arms([.7, 0, 0, 0, 0, 0, 0], [-.7, 0, 0, 0, 0, 0, 0])
+        self.step_arms([0, -.1, 0, 0, 0, 0, 0], [0, -.1, 0, 0, 0, 0, 0])
+        time.sleep(1)
+        error_code, target_angles = vrep.simxGetObjectOrientation(self.clientID, self.main_target, -1,
+                                                                  vrep.simx_opmode_streaming)
+        for angle in target_angles:
+            if angle > 1 or angle < -1:
+                self.reset_sim()
+                print("SIM reset error, resetting again.")
+                break
 
     def full_sim_reset(self):
         # resets and ends simulation

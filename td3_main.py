@@ -41,5 +41,5 @@ if __name__ == '__main__':
     train(agent, sim, replay_buffer)
 
     # possible evaluation
-    agent.load()
+    agent.load(directory="td3/saves/dual_agent")
     evaluate_policy(agent, sim)

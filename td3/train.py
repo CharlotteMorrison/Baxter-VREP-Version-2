@@ -6,6 +6,7 @@ import time
 import psutil
 import torch
 from td3.rewards import *
+import td3.rewards as rew
 
 
 def train(agent, sim, replay_buffer):
@@ -61,6 +62,9 @@ def train(agent, sim, replay_buffer):
             total_timesteps += 1
             steps_in_episode += 1
 
+            # get the initial location of the target object
+            target_start = sim.get_target_position()
+
             new_state = []
             if cons.MODE == 'cooperative':
                 loc = 'td3/saves/shared_agent'
@@ -85,13 +89,14 @@ def train(agent, sim, replay_buffer):
             # add the image to the video array
             video_array.append(sim.get_video_image())
 
+            # check for collision state/ if done
+            # right_arm_collision_state = sim.right_collision_state()
+            # left_arm_collision_state = sim.left_collision_state()
+
+            ''' code for moving arms towards a target    
             # calculate reward
             right_reward, left_reward = sim.calc_distance()
             reward = arm_distance_reward(right_reward, left_reward)
-
-            # check for collision state/ if done
-            right_arm_collision_state = sim.right_collision_state()
-            left_arm_collision_state = sim.left_collision_state()
 
             # check if solved
             if right_reward > cons.SOLVED_DISTANCE and left_reward > cons.SOLVED_DISTANCE:
@@ -104,9 +109,27 @@ def train(agent, sim, replay_buffer):
                 solved = False
             else:
                 done = False
+            '''
+            target_end = sim.get_target_position()
+            target_x, target_y, target_z = target_end
+            reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+
+            # removed collision state checking may add back in to check for box collision with the table.
+
+            if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
+                    round(target_z, 2) == cons.XYZ_GOAL[2]:
+                # end the episode if the target is reached, might be too restrictive- maybe round all to 1 decimal place
+                done = True
+            else:
+                done = False
 
             # if robot makes more than 7 bad moves in a row, end the episode
             # changed to 5 to speed up ending episodes
+            if reward < 0:
+                index += 1
+            else:
+                index = 0
+
             if index >= 5:
                 done = True
                 solved = False
