@@ -29,6 +29,7 @@ def train(agent, sim, replay_buffer):
     all_episode_rewards = []    # the average reward for all episodes, after each new one
     end_reward = []             # the reward at the end of the episode
     avg_last_10_episodes = []   # sliding window of the previous 10 episode rewards
+    episode_length = []         # the length of each episode
 
     if cons.WRITE_TO_FILE:
         td3_report = report()
@@ -162,6 +163,7 @@ def train(agent, sim, replay_buffer):
             if done:
                 # append the final positions reward
                 end_reward.append(reward)
+                episode_length.append(steps_in_episode)
 
                 # get the average reward for the episode and the overall average reward
                 mean_reward_episode = sum(rewards[-steps_in_episode:])/steps_in_episode
@@ -178,7 +180,7 @@ def train(agent, sim, replay_buffer):
 
                 elapsed_time = time.time() - start_time
 
-                if video_record:
+                if video_record and temp_steps > 30:  # only record episodes over 30
                     output_video(episode, video_array, cons.SIZE, "td3/videos/" + cons.DEFAULT_NAME)
                 if solved:
                     output_video(episode, video_array, cons.SIZE, "td3/videos/" + cons.DEFAULT_NAME + "_solved")
@@ -195,6 +197,7 @@ def train(agent, sim, replay_buffer):
                         avg_last_10_episodes.append(sum(episode_rewards[-10:]) / 10)
                         plot_results(avg_last_10_episodes, cons.AVG_10_PLOT_NAME, 'Average Reward Previous 10 Episodes')
 
+                    plot_results(episode_length, cons.EPISODE_LENGTH_NAME, 'Episode Total Average Reward')
                     plot_results(episode_rewards, cons.EPISODE_PLOT_NAME, 'Episode Total Average Reward')
                     plot_results(all_episode_rewards, cons.ALL_PLOT_NAME, 'Total Average Reward')
                     plot_results(end_reward, cons.END_PLOT_NAME, 'Reward For Last Move')

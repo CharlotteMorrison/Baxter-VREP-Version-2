@@ -24,20 +24,20 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             num_of_steps += 1
             # get the starting target location
             target_start = sim.get_target_position()
+
             # get action by policy
-            action = policy.select_action(state, noise=0)
             if cons.MODE == 'cooperative':
                 action = policy.select_action(state, noise=0)
+                # apply action and get new state
+                right_state, left_state = sim.step_arms(action[:7], action[7:])
 
             elif cons.MODE == 'independent':
-                loc = 'td3/saves/dual_agent'
-                right_action = policy.select_action(np.array(state)[:7], 'right', noise=0)
-                left_action = policy.select_action(np.array(state)[7:], 'left', noise=0)
-                action = right_action + left_action
+                right_action = policy.select_action(right_pos, 'right', noise=0)
+                left_action = policy.select_action(left_pos, 'left', noise=0)
+                right_state, left_state = sim.step_arms(right_action, left_action)
 
-            # apply action and get new state
-            right_state, left_state = sim.step_arms(action[:7], action[7:])
             state = right_state + left_state
+
             video_array.append(sim.get_video_image())
             ''' old reward and collision detection
             # calculate reward

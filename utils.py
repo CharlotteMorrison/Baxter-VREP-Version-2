@@ -40,3 +40,12 @@ def plot_results(rewards_total_episode, plot_save, plot_name):
     plt.close()
 
 
+def plot_episode_length(episode_length, plot_save, plot_name):
+    plt.figure(figsize=(12, 5))
+    plt.title(plot_name)
+    plt.xlabel('Episodes')
+    plt.ylabel('Episode Length')
+    plt.plot(episode_length, alpha=0.6, color='blue')
+    plt.savefig(plot_save)
+    plt.close()
+

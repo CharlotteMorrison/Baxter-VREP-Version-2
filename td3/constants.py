@@ -2,7 +2,7 @@ import torch
 from datetime import date
 
 # testing constants
-MAX_EPISODE = 50  # stop the training early and test the results
+MAX_EPISODE = 500  # stop the training early and test the results
 
 # flags
 set_seed = True
@@ -15,6 +15,7 @@ EPISODE_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_episode.png"
 ALL_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_all.png"
 END_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_final.png"
 AVG_10_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_last_10_average.png"
+EPISODE_LENGTH_NAME = "td3/results/plots/" + DEFAULT_NAME + "_episode_length.png"
 
 # Program run constants
 SEED = 0
@@ -42,7 +43,7 @@ OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
 REWARD_THRESH = 1.10
 BATCH_SIZE = 100
-BUFFER_SIZE = 2200  # shrunk from 1,000,000
+BUFFER_SIZE = 10000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount
 TAU = 0.005
 POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement
