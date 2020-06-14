@@ -59,6 +59,7 @@ class TD3(object):
                 critic_loss (float): loss from critic network
         """
         for it in range(iterations):
+            self.total_it += 1  # keep track of the total training iterations
             # Sample replay buffer (priority replay)
             # choose type of replay
             if cons.PRIORITY:
@@ -106,7 +107,7 @@ class TD3(object):
                 replay_buffer.update_priorities(indexes, new_priorities)
 
             # delayed policy updates
-            if self.total_it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
+            if it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
 
                 # compute the actor loss
                 q_action = self.actor(state).float().detach()

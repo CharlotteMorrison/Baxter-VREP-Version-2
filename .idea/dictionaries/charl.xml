@@ -17,6 +17,7 @@
       <w>simx</w>
       <w>tanh</w>
       <w>timesteps</w>
+      <w>timestr</w>
       <w>vrep</w>
     </words>
   </dictionary>

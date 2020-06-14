@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 
 
@@ -5,13 +6,31 @@ class report:
 
     def __init__(self):
         # open files
-        self.step_file = open("td3/results/TD3_results_step.csv", "w")
-        self.episode_file = open("td3/results/TD3_results_episode.csv", "w")
-
+        timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
+        self.step_file = open("td3/results/reports/TD3_results_step{}.csv".format(timestr), "w+")
+        self.episode_file = open("td3/results/reports/TD3_results_episode{}.csv".format(timestr), "w+")
+        self.dist_file = open("td3/results/reports/TD3_distance_to_target{}.csv".format(timestr), "w+")
+        self.actor_loss_file = open("td3/results/reports/TD3_actor_loss{}.csv".format(timestr), "w+")
+        self.critic_loss_file = open("td3/results/reports/TD3_critic_loss{}.csv".format(timestr), "w+")
         # write headers
         self.step_file.write("Step,Reward,Avg_Reward_Last_100,Avg_Reward_Last_1000,Avg_Reward_All,Time_Elapsed")
         self.episode_file.write("Episode,Steps_In_Episode,Total_Steps,Mean_Episode_Reward,Mean_Reward_All,"
                                 "Solved, Reward, Memory_used,Time_Elapsed,Solved")
+        self.dist_file.write("episode,total_timesteps, distance_to_target")
+        self.actor_loss_file.write('total_iterations, iteration_num, actor_loss')
+        self.critic_loss_file.write('total_iterations, iteration_num, critic_loss')
+
+    def write_actor_loss(self, total_iterations, iteration_num, actor_loss):
+        self.actor_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))
+        self.actor_loss_file.flush()
+
+    def write_critic_loss(self, total_iterations, iteration_num, critic_loss):
+        self.critic_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
+        self.critic_loss_file.flush()
+
+    def write_dist_to_target(self, episode, total_timesteps, distance_to_target):
+        self.dist_file.write('\n{},{},{}'.format(episode, total_timesteps, distance_to_target))
+        self.dist_file.flush()
 
     def write_step(self, values, elapsed_time):
         reward = values[-1]
@@ -36,9 +55,11 @@ class report:
         self.step_file.write('\n{},{},{},{},{},{},{}'.format(len(values), reward, mean_100, mean_1000, mean_10000,
                                                              mean_all, time.strftime("%H:%M:%S",
                                                                                      time.gmtime(elapsed_time))))
+        self.step_file.flush()
 
     def write_episode(self, episode, steps, total, mean_episode, mean_all, solved, reward, sys, t):
 
         self.episode_file.write('\n{},{},null,null,{},{},{},{},{},{}'.format(episode, steps, total, mean_episode,
                                                                              mean_all, solved, reward, sys,
                                                                              time.strftime("%H:%M:%S", time.gmtime(t))))
+        self.episode_file.flush()

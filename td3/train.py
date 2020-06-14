@@ -113,12 +113,12 @@ def train(agent, sim, replay_buffer):
             '''
             target_end = sim.get_target_position()
             target_x, target_y, target_z = target_end
-            reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+            reward, dist_to_target = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
 
             # removed collision state checking may add back in to check for box collision with the table.
 
-            if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
-                    round(target_z, 2) == cons.XYZ_GOAL[2]:
+            if round(target_x, 1) == cons.XYZ_GOAL[0] and round(target_y, ) == cons.XYZ_GOAL[1] and \
+                    round(target_z, 1) == cons.XYZ_GOAL[2]:
                 # end the episode if the target is reached, might be too restrictive- maybe round all to 1 decimal place
                 done = True
             else:
@@ -159,6 +159,7 @@ def train(agent, sim, replay_buffer):
             if cons.WRITE_TO_FILE:
                 elapsed_time_frame = time.time() - start_time
                 td3_report.write_step(rewards, elapsed_time_frame)
+                td3_report.write_dist_to_target(episode, total_timesteps, dist_to_target)
 
             if done:
                 # append the final positions reward

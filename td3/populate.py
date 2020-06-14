@@ -86,7 +86,7 @@ def populate_buffer(sim, replay_buffer):
 
         target_end = sim.get_target_position()
         target_x, target_y, target_z = target_end
-        reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+        reward, _ = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
 
         # removed collision state checking may add back in to check for box collision with the table.
 

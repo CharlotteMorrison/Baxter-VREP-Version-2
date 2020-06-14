@@ -35,4 +35,4 @@ def target_movement_reward(start_loc, end_loc,  target_loc):
 
     # difference between starting distance and ending distance from the target
     reward = initial_distance - new_distance
-    return reward
+    return reward, new_distance
