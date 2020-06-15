@@ -19,7 +19,7 @@ def populate_buffer(sim, replay_buffer):
     if platform.system() == 'Windows':
         file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer.pkl"
     else:
-        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer.pkl"
+        file_loc = "td3/temp/buffer.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
