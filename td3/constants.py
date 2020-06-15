@@ -3,7 +3,7 @@ from datetime import datetime
 from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 5  # stop the training early and test the results
+MAX_EPISODE = 3000  # stop the training early and test the results
 
 # flags
 set_seed = True
@@ -46,7 +46,7 @@ OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
 REWARD_THRESH = 1.10
 BATCH_SIZE = 100
-BUFFER_SIZE = 2000  # shrunk from 1,000,000
+BUFFER_SIZE = 10000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount
 TAU = 0.005
 POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement

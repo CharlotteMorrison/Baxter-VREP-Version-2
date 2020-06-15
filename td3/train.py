@@ -165,9 +165,8 @@ def train(agent, sim, replay_buffer):
             if solved:
                 print('Solved on Episode: {}'.format(episode))
 
-
             temp_steps += 1
-            if temp_steps == 50:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.
+            if temp_steps == 100:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.
                 done = True  # stop after 50 attempts, was getting stuck flipping from bad to good.
                 temp_steps = 0
 
