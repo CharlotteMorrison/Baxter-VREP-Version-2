@@ -7,11 +7,12 @@ class report:
     def __init__(self):
         # open files
         timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
-        self.step_file = open("td3/results/reports/TD3_results_step{}.csv".format(timestr), "w+")
-        self.episode_file = open("td3/results/reports/TD3_results_episode{}.csv".format(timestr), "w+")
-        self.dist_file = open("td3/results/reports/TD3_distance_to_target{}.csv".format(timestr), "w+")
-        self.actor_loss_file = open("td3/results/reports/TD3_actor_loss{}.csv".format(timestr), "w+")
-        self.critic_loss_file = open("td3/results/reports/TD3_critic_loss{}.csv".format(timestr), "w+")
+        self.step_file = open("td3/results/reports/TD3_results_step_{}.csv".format(timestr), "w+")
+        self.episode_file = open("td3/results/reports/TD3_results_episode_{}.csv".format(timestr), "w+")
+        self.dist_file = open("td3/results/reports/TD3_distance_to_target_{}.csv".format(timestr), "w+")
+        self.actor_loss_file = open("td3/results/reports/TD3_actor_loss_{}.csv".format(timestr), "w+")
+        self.critic_loss_file = open("td3/results/reports/TD3_critic_loss_{}.csv".format(timestr), "w+")
+        self.solved_file = open("td3/results/reports/TD3_solved_{}.csv".format(timestr), "w+")
         # write headers
         self.step_file.write("Step,Reward,Avg_Reward_Last_100,Avg_Reward_Last_1000,Avg_Reward_All,Time_Elapsed")
         self.episode_file.write("Episode,Steps_In_Episode,Total_Steps,Mean_Episode_Reward,Mean_Reward_All,"
@@ -19,6 +20,11 @@ class report:
         self.dist_file.write("episode,total_timesteps, distance_to_target")
         self.actor_loss_file.write('total_iterations, iteration_num, actor_loss')
         self.critic_loss_file.write('total_iterations, iteration_num, critic_loss')
+        self.solved_file.write('episode,solved_on_step')
+
+    def write_solved(self, episode, solved_on_step):
+        self.solved_file.write('\n{},{}'.format(episode, solved_on_step))
+        self.solved_file.flush()
 
     def write_actor_loss(self, total_iterations, iteration_num, actor_loss):
         self.actor_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))

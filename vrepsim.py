@@ -40,6 +40,21 @@ class VrepSim(object):
             # get the euler angles of the main target, used to reset the object
             error_code, self.main_target_angles = vrep.simxGetObjectOrientation(self.clientID, self.main_target, -1,
                                                                                 vrep.simx_opmode_streaming)
+            # get the sensor handles for proximity sensing
+            error_code, self.right_prox_sensor = vrep.simxGetObjectHandle(self.clientID,
+                                                                          'Baxter_rightArm_proxSensor',
+                                                                          vrep.simx_opmode_oneshot_wait)
+            error_code, self.left_prox_sensor = vrep.simxGetObjectHandle(self.clientID,
+                                                                         'Baxter_leftArm_proxSensor',
+                                                                         vrep.simx_opmode_oneshot_wait)
+            # initialize the sensors
+            _, self.right_state, _, self.right_object, _ = vrep.simxReadProximitySensor(self.clientID,
+                                                                                        self.right_prox_sensor,
+                                                                                        vrep.simx_opmode_streaming)
+
+            _, self.left_state, _, self.left_object, _ = vrep.simxReadProximitySensor(self.clientID,
+                                                                                      self.left_prox_sensor,
+                                                                                      vrep.simx_opmode_streaming)
 
             # right arm
             error_code, self.right_hand = vrep.simxGetObjectHandle(self.clientID, 'Baxter_rightArm_camera',
@@ -64,6 +79,10 @@ class VrepSim(object):
             error, self.left_arm_collision_table = vrep.simxGetCollisionHandle(self.clientID,
                                                                                "left_collision_table",
                                                                                vrep.simx_opmode_blocking)
+
+            error, self.target_collision_table = vrep.simxGetCollisionHandle(self.clientID,
+                                                                             "object_collision_table",
+                                                                             vrep.simx_opmode_blocking)
             # Used to translate action to joint array position
             self.joint_switch = {0: 0, 1: 0, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4, 10: 5, 11: 5, 12: 6, 13: 6}
 
@@ -109,6 +128,7 @@ class VrepSim(object):
             vrep.simxGetVisionSensorImage(self.clientID, self.input_cam, 0, vrep.simx_opmode_streaming)
             vrep.simxGetVisionSensorImage(self.clientID, self.video_cam, 0, vrep.simx_opmode_streaming)
 
+            # start streaming the collision state information
             # right hand
             error_code, self.right_arm_collision_state_target = vrep.simxReadCollision(self.clientID,
                                                                                        self.right_arm_collision_target,
@@ -123,6 +143,9 @@ class VrepSim(object):
             error_code, self.left_arm_collision_state_table = vrep.simxReadCollision(self.clientID,
                                                                                      self.left_arm_collision_table,
                                                                                      vrep.simx_opmode_streaming)
+            error_code, self.object_collision_state_table = vrep.simxReadCollision(self.clientID,
+                                                                                   self.target_collision_table,
+                                                                                   vrep.simx_opmode_streaming)
             # enable vacuum cups
             vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup_active', 1, vrep.simx_opmode_oneshot)
             vrep.simxSetIntegerSignal(self.clientID, 'BaxterVacuumCup#0_active', 1, vrep.simx_opmode_oneshot)
@@ -219,7 +242,20 @@ class VrepSim(object):
             vrep.simxSetJointTargetPosition(self.clientID, self.left_joint_array[x], left_new_position[x],
                                             vrep.simx_opmode_oneshot_wait)
         time.sleep(1)
+
         return right_new_position, left_new_position
+
+    def check_suction_prox(self):
+        _, self.right_state, _, self.right_object, _ = vrep.simxReadProximitySensor(self.clientID,
+                                                                                    self.right_prox_sensor,
+                                                                                    vrep.simx_opmode_buffer)
+        _, self.left_state, _, self.left_object, _ = vrep.simxReadProximitySensor(self.clientID,
+                                                                                  self.left_prox_sensor,
+                                                                                  vrep.simx_opmode_buffer)
+        if self.left_state and self.right_state:
+            return True
+        else:
+            return False
 
     def get_target_position(self):
         error_code, xyz_position = vrep.simxGetObjectPosition(self.clientID, self.main_target, -1,
@@ -259,6 +295,13 @@ class VrepSim(object):
             pow((self.left_xyz_hand[2] + self.left_xyz_target[2]), 2))
 
         return right_distance, left_distance
+
+    def object_collision_state(self):
+        error_code, self.object_collision_state_table = vrep.simxReadCollision(self.clientID,
+                                                                               self.target_collision_table,
+                                                                               vrep.simx_opmode_buffer)
+
+        return self.object_collision_state_table
 
     def right_collision_state(self):
         error_code, self.right_arm_collision_state_target = vrep.simxReadCollision(self.clientID,

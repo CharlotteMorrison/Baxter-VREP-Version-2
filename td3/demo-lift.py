@@ -4,15 +4,19 @@ import time
 if __name__ == '__main__':
 
     sim = VrepSim()
+    sim.check_suction_prox()
+    time.sleep(5)
     sim.reset_sim()
     time.sleep(1)
     print(sim.get_target_angles())
     # demo both arms lifting
     sim.step_arms([0, .45, 0, 0, -1.6, -1.5, 0], [0, .45, 0, 0, 1.6, -1.5, 0])
+    sim.check_suction_prox()
     sim.step_arms([.65, 0, 0, 0, 0, 0, 0], [-.65, 0, 0, 0, 0, 0, 0])
     time.sleep(1)
+    sim.check_suction_prox()
     sim.step_arms([0, -.6, 0, 0, 0, 0, 0], [0, -.6, 0, 0, 0, 0, 0])
-
+    sim.check_suction_prox()
 
     '''
     # demo one arm lifting

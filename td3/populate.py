@@ -17,9 +17,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-1-suction.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer.pkl"
     else:
-        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer-1-suction.pkl"
+        file_loc = "/home/student/Baxter_Code/Baxter-VREP-Version-2/td3/temp/buffer.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -49,6 +49,8 @@ def populate_buffer(sim, replay_buffer):
     buffer_storage = []
     buffer = cons.BUFFER_SIZE - replay_counter
     print('Buffer size {}/{} loaded from previous session'.format(replay_counter, cons.BUFFER_SIZE))
+    collision_count = 0 # keep track of the number of table hits in a row, reset sim if it keeps hitting table
+    done = False  # start with initial state of done == false
 
     for x in range(buffer):
 
@@ -69,8 +71,10 @@ def populate_buffer(sim, replay_buffer):
         right_state, left_state = sim.step_arms(right_action, left_action)
         next_state = right_state + left_state
 
-        right_arm_collision_state = sim.right_collision_state()
-        left_arm_collision_state = sim.left_collision_state()
+        object_collision_table = sim.object_collision_state()
+
+        # right_arm_collision_state = sim.right_collision_state()
+        # left_arm_collision_state = sim.left_collision_state()
 
         ''' old reward for moving arms towards a target
         right_reward, left_reward = sim.calc_distance()
@@ -88,28 +92,35 @@ def populate_buffer(sim, replay_buffer):
         target_x, target_y, target_z = target_end
         reward, _ = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
 
-        # removed collision state checking may add back in to check for box collision with the table.
-
         if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
                 round(target_z, 2) == cons.XYZ_GOAL[2]:
             # end the episode if the target is reached, might be too restrictive- maybe round all to one decimal place
             done = True
-        elif x != 0 and x % 100 == 0:
+        elif x != 0 and x % 50 == 0:
             # end the episode after 100 movements
             done = True
         else:
             done = False
 
+        if object_collision_table:
+            # if it collides with the table 5 times in a row - end episode
+            collision_count += 1
+            if collision_count > 4:
+                done = True
+                collision_count = 0
+                print('5 bad in a row')
+        else:
+            collision_count = 0
+
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
 
-        # TODO save the observations, for testing , remove later after testing
         buffer_storage.append([state, action, reward, next_state, done])
 
         if done:
             sim.reset_sim()
 
-        if x % 25 == 0:
+        if x % 50 == 0:
             save_buffer = open(file_loc, "ab")
             pickle.dump(buffer_storage, save_buffer)
             save_buffer.close()

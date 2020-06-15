@@ -58,6 +58,7 @@ def train(agent, sim, replay_buffer):
         solved = False  # reset each episode as unsolved
         index = 0  # track the number of bad moves made.
         temp_steps = 0  # tracks the number of tries- if above 45, is done, reset.
+        collision_count = 0
 
         while True:
             total_timesteps += 1
@@ -135,6 +136,22 @@ def train(agent, sim, replay_buffer):
                 done = True
                 solved = False
 
+            # check for multiple collisions in a row (5), reset sim if so
+            object_collision_table = sim.object_collision_state()
+            if object_collision_table:
+                # if it collides with the table 5 times in a row - end episode
+                collision_count += 1
+                if collision_count > 4:
+                    done = True
+                    collision_count = 0
+            else:
+                collision_count = 0
+
+            # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
+            if not sim.check_suction_prox():
+                done = True
+                reward = 0
+
             # store the reward for the step
             rewards.append(reward)
 
@@ -142,12 +159,13 @@ def train(agent, sim, replay_buffer):
             replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward, new_state, done)
 
             # training step
-            agent.train(replay_buffer, cons.BATCH_SIZE)
+            agent.train(replay_buffer, cons.BATCH_SIZE, td3_report)
 
             state = new_state
 
             if solved:
                 print('Solved on Episode: {}'.format(episode))
+                td3_report.write_solved(episode, temp_steps)
 
             temp_steps += 1
             if temp_steps == 50:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.
