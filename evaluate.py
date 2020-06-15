@@ -10,7 +10,6 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
 
     for i in range(eval_episodes):
         video_array = []
-        episode_reward = []
         sim.reset_sim()
         video_array.append(sim.get_video_image())
 
@@ -60,7 +59,6 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             target_end = sim.get_target_position()
             target_x, target_y, target_z = target_end
             reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
-            episode_reward.append(reward)
 
             if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
                     round(target_z, 2) == cons.XYZ_GOAL[2]:
@@ -69,7 +67,11 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
                 done = True
             else:
                 done = False
-        avg_reward.append(sum(episode_reward)/len(episode_reward))
+            if not sim.check_suction_prox():
+                done = True
+
+            cons.TD3_REPORT.write_eval_reward(i, reward)
+
         output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
     total_avg_reward = sum(avg_reward)/len(avg_reward)
 

@@ -77,6 +77,7 @@ class TD3SharedCritic(object):
         for it in range(iterations):
             # Sample replay buffer (priority replay)
             # choose type of replay
+            self.total_it += 1
             if cons.PRIORITY:
                 state, action, reward, next_state, done, weights, indexes = replay_buffer.sample(cons.BATCH_SIZE,
                                                                                                  beta=cons.BETA_SCHED.value(it))
@@ -119,6 +120,7 @@ class TD3SharedCritic(object):
 
             # compute critic loss
             critic_loss = F.mse_loss(current_q1, target_q) + F.mse_loss(current_q2, target_q)
+            cons.TD3_REPORT.write_critic_loss(self.total_it, it, critic_loss)
 
             # optimize the critic
             self.critic_optimizer.zero_grad()
@@ -133,7 +135,7 @@ class TD3SharedCritic(object):
                 replay_buffer.update_priorities(indexes, new_priorities)
 
             # delayed policy updates
-            if self.total_it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
+            if it % cons.POLICY_FREQ == 0:  # update the actor policy less frequently
 
                 # compute the actor loss
                 q_action_1 = self.actor_1(states[0]).float().detach()
@@ -141,6 +143,8 @@ class TD3SharedCritic(object):
                 q_action = torch.cat((q_action_1, q_action_2), 1)
                 actor_loss_1 = -self.critic.get_q(state, q_action).mean()
                 actor_loss_2 = actor_loss_1.clone()
+                cons.TD3_REPORT.write_actor_loss(self.total_it, it, actor_loss_1, 1)
+                cons.TD3_REPORT.write_actor_loss(self.total_it, it, actor_loss_2, 2)
 
                 # optimize the actors
                 self.actor_optimizer_1.zero_grad()

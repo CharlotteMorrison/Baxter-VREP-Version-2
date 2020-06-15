@@ -10,25 +10,37 @@ class report:
         self.step_file = open("td3/results/reports/TD3_results_step_{}.csv".format(timestr), "w+")
         self.episode_file = open("td3/results/reports/TD3_results_episode_{}.csv".format(timestr), "w+")
         self.dist_file = open("td3/results/reports/TD3_distance_to_target_{}.csv".format(timestr), "w+")
-        self.actor_loss_file = open("td3/results/reports/TD3_actor_loss_{}.csv".format(timestr), "w+")
+        self.actor_loss_file_1 = open("td3/results/reports/TD3_actor_loss_1_{}.csv".format(timestr), "w+")
+        self.actor_loss_file_2 = open("td3/results/reports/TD3_actor_loss_2_{}.csv".format(timestr), "w+")
         self.critic_loss_file = open("td3/results/reports/TD3_critic_loss_{}.csv".format(timestr), "w+")
         self.solved_file = open("td3/results/reports/TD3_solved_{}.csv".format(timestr), "w+")
+        self.evaluation_file = open("td3/results/reports/TD3_evaluation_{}.csv".format(timestr), "w+")
         # write headers
         self.step_file.write("Step,Reward,Avg_Reward_Last_100,Avg_Reward_Last_1000,Avg_Reward_All,Time_Elapsed")
         self.episode_file.write("Episode,Steps_In_Episode,Total_Steps,Mean_Episode_Reward,Mean_Reward_All,"
                                 "Solved, Reward, Memory_used,Time_Elapsed,Solved")
         self.dist_file.write("episode,total_timesteps, distance_to_target")
-        self.actor_loss_file.write('total_iterations, iteration_num, actor_loss')
+        self.actor_loss_file_1.write('total_iterations, iteration_num, actor_loss')
+        self.actor_loss_file_2.write('total_iterations, iteration_num, actor_loss')
         self.critic_loss_file.write('total_iterations, iteration_num, critic_loss')
         self.solved_file.write('episode,solved_on_step')
+        self.evaluation_file.write('episode,reward')
+
+    def write_eval_reward(self, episode, reward):
+        self.solved_file.write('\n{}'.format(episode, reward))
+        self.solved_file.flush()
 
     def write_solved(self, episode, solved_on_step):
         self.solved_file.write('\n{},{}'.format(episode, solved_on_step))
         self.solved_file.flush()
 
-    def write_actor_loss(self, total_iterations, iteration_num, actor_loss):
-        self.actor_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))
-        self.actor_loss_file.flush()
+    def write_actor_loss(self, total_iterations, iteration_num, actor_loss, actor_num):
+        if actor_num == 2:
+            actor_file = self.actor_loss_file_2
+        else:
+            actor_file = self.actor_loss_file_1
+        actor_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))
+        actor_file.flush()
 
     def write_critic_loss(self, total_iterations, iteration_num, critic_loss):
         self.critic_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))

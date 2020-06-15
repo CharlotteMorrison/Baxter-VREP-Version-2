@@ -49,7 +49,7 @@ class TD3(object):
         torch.clamp(action, min=cons.MIN_ACTION, max=cons.MAX_ACTION)
         return action
 
-    def train(self, replay_buffer, iterations, report):
+    def train(self, replay_buffer, iterations):
         """Train and update actor and critic networks
             Args:
                 replay_buffer (ReplayBuffer): buffer for experience replay
@@ -93,7 +93,7 @@ class TD3(object):
 
             # compute critic loss
             critic_loss = F.mse_loss(current_q1, target_q) + F.mse_loss(current_q2, target_q)
-            report.write_critic_loss(self.total_it, it, critic_loss)
+            cons.TD3_REPORT.write_critic_loss(self.total_it, it, critic_loss)
 
             # optimize the critic
             self.critic_optimizer.zero_grad()
@@ -113,7 +113,7 @@ class TD3(object):
                 # compute the actor loss
                 q_action = self.actor(state).float().detach()
                 actor_loss = -self.critic.get_q(state, q_action).mean()
-                report.write(self.total_it, it, actor_loss)
+                cons.TD3_REPORT.write(self.total_it, it, actor_loss, 1)
 
                 # optimize the actor
                 self.actor_optimizer.zero_grad()

@@ -1,7 +1,6 @@
 import numpy as np
 import td3.constants as cons
 from utils import output_video, plot_results
-from td3.reports import report
 import time
 import psutil
 import torch
@@ -32,7 +31,7 @@ def train(agent, sim, replay_buffer):
     episode_length = []         # the length of each episode
 
     if cons.WRITE_TO_FILE:
-        td3_report = report()
+        td3_report = cons.TD3_REPORT
 
     while total_timesteps < cons.EXPLORATION:
         if episode == cons.MAX_EPISODE:
@@ -159,13 +158,13 @@ def train(agent, sim, replay_buffer):
             replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward, new_state, done)
 
             # training step
-            agent.train(replay_buffer, cons.BATCH_SIZE, td3_report)
+            agent.train(replay_buffer, cons.BATCH_SIZE)
 
             state = new_state
 
             if solved:
                 print('Solved on Episode: {}'.format(episode))
-                td3_report.write_solved(episode, temp_steps)
+
 
             temp_steps += 1
             if temp_steps == 50:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.

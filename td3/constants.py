@@ -1,8 +1,9 @@
 import torch
 from datetime import datetime
+from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 500  # stop the training early and test the results
+MAX_EPISODE = 5  # stop the training early and test the results
 
 # flags
 set_seed = True
@@ -16,6 +17,8 @@ ALL_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_all_" + timestr +
 END_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_final_" + timestr + ".png"
 AVG_10_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_last_10_average_" + timestr + ".png"
 EPISODE_LENGTH_NAME = "td3/results/plots/" + DEFAULT_NAME + "_episode_length_" + timestr + ".png"
+
+TD3_REPORT = report()
 
 # Program run constants
 SEED = 0
@@ -43,7 +46,7 @@ OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
 REWARD_THRESH = 1.10
 BATCH_SIZE = 100
-BUFFER_SIZE = 10000  # shrunk from 1,000,000
+BUFFER_SIZE = 2000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount
 TAU = 0.005
 POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement

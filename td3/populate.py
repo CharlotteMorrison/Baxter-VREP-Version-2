@@ -108,9 +108,13 @@ def populate_buffer(sim, replay_buffer):
             if collision_count > 4:
                 done = True
                 collision_count = 0
-                print('5 bad in a row')
         else:
             collision_count = 0
+
+        # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
+        if not sim.check_suction_prox():
+            done = True
+            reward = 0
 
         replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
                           next_state, done)
@@ -131,7 +135,9 @@ def populate_buffer(sim, replay_buffer):
             print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
         elif x == cons.BUFFER_SIZE:
             print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
-
+    save_buffer = open(file_loc, "ab")
+    pickle.dump(buffer_storage, save_buffer)
+    save_buffer.close()
     print("\nExperience replay buffer initialized.")
 
     sys.stdout.flush()
