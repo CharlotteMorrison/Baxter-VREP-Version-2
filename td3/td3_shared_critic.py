@@ -172,7 +172,7 @@ class TD3SharedCritic(object):
         torch.save(self.actor_2.state_dict(), '%s/%s_actor_2.pth' % (directory, filename))
         torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
 
-    def load(self, filename="best_avg", directory="td3/saves"):
+    def load(self, filename="best_avg", directory="td3/saves/dual_agent/"):
         self.actor_1.load_state_dict(torch.load('%s/%s_actor_1.pth' % (directory, filename)))
         self.actor_2.load_state_dict(torch.load('%s/%s_actor_2.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))

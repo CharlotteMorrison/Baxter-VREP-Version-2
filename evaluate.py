@@ -1,8 +1,7 @@
 import td3.constants as cons
 from utils import output_video
 import td3.rewards as rew
-import numpy as np
-
+import statistics as sta
 
 def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
     """run several episodes with the best agent policy"""
@@ -58,7 +57,7 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             '''
             target_end = sim.get_target_position()
             target_x, target_y, target_z = target_end
-            reward = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+            reward, _ = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
 
             if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
                     round(target_z, 2) == cons.XYZ_GOAL[2]:
@@ -71,9 +70,9 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
                 done = True
 
             cons.TD3_REPORT.write_eval_reward(i, reward)
-
+            avg_reward.append(reward)
         output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
-    total_avg_reward = sum(avg_reward)/len(avg_reward)
+    total_avg_reward = sta.mean(avg_reward)
 
     print("\n---------------------------------------")
     print("Evaluation over {:d} episodes: {:f}" .format(eval_episodes, total_avg_reward))
