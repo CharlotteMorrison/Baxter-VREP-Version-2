@@ -17,9 +17,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-IND-1.pkl"
     else:
-        file_loc = "td3/temp/buffer.pkl"
+        file_loc = "td3/temp/buffer-IND-1.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -130,14 +130,14 @@ def populate_buffer(sim, replay_buffer):
             save_buffer.close()
             buffer_storage = []
             # sim.reset_sim()  # reset simulation after 25 movements
-        if x % 1000 == 0 and x < cons.BUFFER_SIZE - 100 and x != 0:
+        if x % 1000 == 0 and x < cons.BUFFER_SIZE - 1000 and x != 0:
             sim.reset_sim()  # moved to every 1000 iterations, to allow for more diverse movement sets
             print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
-        elif x == cons.BUFFER_SIZE:
-            print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
-    save_buffer = open(file_loc, "ab")
-    pickle.dump(buffer_storage, save_buffer)
-    save_buffer.close()
+        elif x == cons.BUFFER_SIZE - 1:
+            print("{} of {} loaded".format(x + replay_counter +1, cons.BUFFER_SIZE))
+            save_buffer = open(file_loc, "ab")
+            pickle.dump(buffer_storage, save_buffer)
+            save_buffer.close()
     print("\nExperience replay buffer initialized.")
 
     sys.stdout.flush()

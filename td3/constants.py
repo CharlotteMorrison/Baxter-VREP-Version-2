@@ -3,7 +3,7 @@ from datetime import datetime
 from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 3000  # stop the training early and test the results
+MAX_EPISODE = 6000  # stop the training early and test the results
 
 # flags
 set_seed = True
@@ -26,7 +26,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 num_frames = 300000
 VIDEO_INTERVAL = 1  # change to 1 to record all videos
 NUM_FRAMES_STACKED = 4
-XYZ_GOAL = [0.3, 0.0, 1.33]
+XYZ_GOAL = [.2, .1, 1.2]  # More specific goal numbers [0.231, 0.105, 1.261]
 SOLVED_DISTANCE = 1.0  #
 WRITE_TO_FILE = True
 REPORT_INTERVAL = 1  # write all the reports

@@ -117,7 +117,7 @@ def train(agent, sim, replay_buffer):
 
             # removed collision state checking may add back in to check for box collision with the table.
 
-            if round(target_x, 1) == cons.XYZ_GOAL[0] and round(target_y, ) == cons.XYZ_GOAL[1] and \
+            if round(target_x, 1) == cons.XYZ_GOAL[0] and round(target_y, 1) == cons.XYZ_GOAL[1] and \
                     round(target_z, 1) == cons.XYZ_GOAL[2]:
                 # end the episode if the target is reached, might be too restrictive- maybe round all to 1 decimal place
                 done = True
