@@ -3,7 +3,7 @@ from datetime import datetime
 from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 1000  # stop the training early and test the results
+MAX_EPISODE = 6000  # stop the training early and test the results
 
 # flags
 set_seed = True
