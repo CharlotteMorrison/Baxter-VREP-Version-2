@@ -3,11 +3,11 @@ from datetime import datetime
 from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 6000  # stop the training early and test the results
+MAX_EPISODE = 1000  # stop the training early and test the results
 
 # flags
 set_seed = True
-MODE = 'independent'  # cooperative combines actions for training, independent uses two sep. actions
+MODE = 'cooperative'  # cooperative combines actions for training, independent uses two sep. actions
 
 timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
 DEFAULT_NAME = "Baxter_TD3_" + MODE
@@ -23,6 +23,7 @@ TD3_REPORT = report()
 # Program run constants
 SEED = 0
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print('Device: {}'.format(DEVICE))
 num_frames = 300000
 VIDEO_INTERVAL = 1  # change to 1 to record all videos
 NUM_FRAMES_STACKED = 4
@@ -33,7 +34,7 @@ REPORT_INTERVAL = 1  # write all the reports
 SIZE = (512, 512)
 
 # prioritized replay params
-PRIORITY = True     # True runs with priority replay
+PRIORITY = True    # True runs with priority replay
 ALPHA = .6          # alpha param for priority replay buffer
 BETA = .4           # initial value of beta
 BETA_ITERS = None   # number of iterations over which beta will be annealed from initial value
@@ -46,7 +47,7 @@ OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
 REWARD_THRESH = 1.10
 BATCH_SIZE = 100
-BUFFER_SIZE = 10000  # shrunk from 1,000,000
+BUFFER_SIZE = 20000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount
 TAU = 0.005
 POLICY_NOISE = 0.01  # adjusted from .2, due to scale of movement

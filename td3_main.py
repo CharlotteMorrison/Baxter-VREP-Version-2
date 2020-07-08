@@ -41,5 +41,10 @@ if __name__ == '__main__':
     train(agent, sim, replay_buffer)
 
     # possible evaluation
-    agent.load(directory="td3/saves/dual_agent")
+
+    if cons.MODE == 'cooperative':
+        agent.load(directory="td3/saves/dual_agent")
+    elif cons.MODE == 'independent':
+        agent.load(directory="td3/saves/shared_agent")
+
     evaluate_policy(agent, sim)

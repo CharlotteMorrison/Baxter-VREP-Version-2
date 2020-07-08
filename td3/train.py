@@ -117,24 +117,29 @@ def train(agent, sim, replay_buffer):
 
             # removed collision state checking may add back in to check for box collision with the table.
 
-            if round(target_x, 1) == cons.XYZ_GOAL[0] and round(target_y, 1) == cons.XYZ_GOAL[1] and \
-                    round(target_z, 1) == cons.XYZ_GOAL[2]:
+            round_target_x = round(target_x, 1)
+            round_target_y = round(target_y, 1)
+            round_target_z = round(target_z, 1)
+
+            if round_target_x == cons.XYZ_GOAL[0] and round_target_y == cons.XYZ_GOAL[1] and \
+                    round_target_z == cons.XYZ_GOAL[2]:
                 # end the episode if the target is reached, might be too restrictive- maybe round all to 1 decimal place
                 done = True
             else:
                 done = False
 
-            # if robot makes more than 7 bad moves in a row, end the episode
+            # if robot makes more than 10 bad moves in a row, end the episode
             # changed to 5 to speed up ending episodes
+            '''
             if reward < 0:
                 index += 1
             else:
                 index = 0
 
-            if index >= 5:
+            if index >= 10:  # increased to 10 from 5
                 done = True
                 solved = False
-
+            '''
             # check for multiple collisions in a row (5), reset sim if so
             object_collision_table = sim.object_collision_state()
             if object_collision_table:
@@ -149,7 +154,8 @@ def train(agent, sim, replay_buffer):
             # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
             if not sim.check_suction_prox():
                 done = True
-                reward = 0
+                time.sleep(1)  # wait to allow the sim to catch up
+                reward = -1  # was zero, try a big, bad reward when you drop it
 
             # store the reward for the step
             rewards.append(reward)

@@ -366,9 +366,9 @@ class VrepSim(object):
         # self.step_arms([.608, .45, 0, 0, -1.6, -1.5, 0], [-.605, .45, 0, 0, 1.6, -1.5, 0])
         self.step_arms([0, .45, 0, 0, -1.6, -1.5, 0], [0, .45, 0, 0, 1.6, -1.5, 0])
         time.sleep(.5)
-        self.step_arms([.7, 0, 0, 0, 0, 0, 0], [-.7, 0, 0, 0, 0, 0, 0])
+        self.step_arms([.65, 0, 0, 0, 0, 0, 0], [-.7, 0, 0, 0, 0, 0, 0])
         time.sleep(.5)
-        self.step_arms([0, -.1, 0, 0, 0, 0, 0], [0, -.1, 0, 0, 0, 0, 0])
+        self.step_arms([0, -.1, 0, 0, 0, 0, 0], [0, -0.1, 0, 0, 0, 0, 0])
 
         error_code, target_angles = vrep.simxGetObjectOrientation(self.clientID, self.main_target, -1,
                                                                   vrep.simx_opmode_streaming)

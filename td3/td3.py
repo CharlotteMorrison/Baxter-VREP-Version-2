@@ -113,7 +113,7 @@ class TD3(object):
                 # compute the actor loss
                 q_action = self.actor(state).float().detach()
                 actor_loss = -self.critic.get_q(state, q_action).mean()
-                cons.TD3_REPORT.write(self.total_it, it, actor_loss, 1)
+                cons.TD3_REPORT.write_actor_loss(self.total_it, it, actor_loss, 1)
 
                 # optimize the actor
                 self.actor_optimizer.zero_grad()
@@ -132,6 +132,6 @@ class TD3(object):
         torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
         torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
 
-    def load(self, filename="best_avg", directory="td3/saves"):
+    def load(self, filename="best_avg", directory="td3/saves/shared_agent"):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
