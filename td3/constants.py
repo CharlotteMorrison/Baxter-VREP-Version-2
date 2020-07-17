@@ -7,7 +7,7 @@ MAX_EPISODE = 6000  # stop the training early and test the results
 
 # flags
 set_seed = True
-MODE = 'cooperative'  # cooperative combines actions for training, independent uses two sep. actions
+MODE = 'independent'  # cooperative combines actions for training, independent uses two sep. actions
 
 timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
 DEFAULT_NAME = "Baxter_TD3_" + MODE

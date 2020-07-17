@@ -257,6 +257,26 @@ class VrepSim(object):
         else:
             return False
 
+    def check_suction_distance(self):
+        error_code, self.right_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.right_hand, -1,
+                                                                     vrep.simx_opmode_buffer)  # right hand
+        error_code, self.left_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.left_hand, -1,
+                                                                    vrep.simx_opmode_buffer)  # left hand
+
+        # removed getting right_target location each time- using the static initial location
+        # error_code, self.right_xyz_target = vrep.simxGetObjectPosition(self.clientID, self.right_target, -1,
+        #                                                          vrep.simx_opmode_buffer)
+        # TODO set this to main target, find static point.
+        # need to check if this formula is calculating distance properly
+
+        distance = math.sqrt(
+            pow((self.right_xyz_hand[0] - self.left_xyz_hand[0]), 2) +
+            pow((self.right_xyz_hand[1] - self.left_xyz_hand[1]), 2) +
+            pow((self.right_xyz_hand[2] - self.left_xyz_hand[2]), 2))
+
+        return distance
+
+
     def get_target_position(self):
         error_code, xyz_position = vrep.simxGetObjectPosition(self.clientID, self.main_target, -1,
                                                               vrep.simx_opmode_streaming)

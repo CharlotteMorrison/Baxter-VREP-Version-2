@@ -151,6 +151,12 @@ def train(agent, sim, replay_buffer):
             else:
                 collision_count = 0
 
+            # check distance between grippers to see if dropped
+            if sim.check_suction_distance() > .32:
+                done = True
+                time.sleep(1)  # wait to allow the sim to catch up
+                reward = -1  # was zero, try a big, bad reward when you drop it
+
             # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
             if not sim.check_suction_prox():
                 done = True

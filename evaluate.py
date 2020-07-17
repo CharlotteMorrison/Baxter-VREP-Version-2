@@ -3,6 +3,7 @@ from utils import output_video
 import td3.rewards as rew
 import statistics as sta
 
+
 def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
     """run several episodes with the best agent policy"""
     avg_reward = []
