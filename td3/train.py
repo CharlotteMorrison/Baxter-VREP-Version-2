@@ -75,8 +75,11 @@ def train(agent, sim, replay_buffer):
                 right_state, left_state = sim.step_arms(action[:7], action[7:])
                 new_state = right_state + left_state
 
-            elif cons.MODE == 'independent':
-                loc = 'td3/saves/dual_agent'
+            elif cons.MODE == 'independent' or cons.MODE == 'separate':
+                if cons.MODE == 'independent':
+                    loc = 'td3/saves/dual_agent'
+                elif cons.MODE == 'separate':
+                    loc = 'td3/saves/separate_agent'
                 right_action = agent.select_action(np.array(state)[:7], 'right', noise=cons.POLICY_NOISE).tolist()
                 left_action = agent.select_action(np.array(state)[7:], 'left', noise=cons.POLICY_NOISE).tolist()
 

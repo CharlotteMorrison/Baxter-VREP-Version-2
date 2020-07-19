@@ -12,7 +12,8 @@ class report:
         self.dist_file = open("td3/results/reports/TD3_distance_to_target_{}.csv".format(timestr), "w+")
         self.actor_loss_file_1 = open("td3/results/reports/TD3_actor_loss_1_{}.csv".format(timestr), "w+")
         self.actor_loss_file_2 = open("td3/results/reports/TD3_actor_loss_2_{}.csv".format(timestr), "w+")
-        self.critic_loss_file = open("td3/results/reports/TD3_critic_loss_{}.csv".format(timestr), "w+")
+        self.critic_loss_file_1 = open("td3/results/reports/TD3_critic_loss_1_{}.csv".format(timestr), "w+")
+        self.critic_loss_file_2 = open("td3/results/reports/TD3_critic_loss_2_{}.csv".format(timestr), "w+")
         self.solved_file = open("td3/results/reports/TD3_solved_{}.csv".format(timestr), "w+")
         self.evaluation_file = open("td3/results/reports/TD3_evaluation_{}.csv".format(timestr), "w+")
         # write headers
@@ -22,7 +23,8 @@ class report:
         self.dist_file.write("episode,total_timesteps, distance_to_target")
         self.actor_loss_file_1.write('total_iterations, iteration_num, actor_loss')
         self.actor_loss_file_2.write('total_iterations, iteration_num, actor_loss')
-        self.critic_loss_file.write('total_iterations, iteration_num, critic_loss')
+        self.critic_loss_file_1.write('total_iterations, iteration_num, critic_loss')
+        self.critic_loss_file_1.write('total_iterations, iteration_num, critic_loss')
         self.solved_file.write('episode,solved_on_step')
         self.evaluation_file.write('episode,reward')
 
@@ -42,9 +44,13 @@ class report:
         actor_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))
         actor_file.flush()
 
-    def write_critic_loss(self, total_iterations, iteration_num, critic_loss):
-        self.critic_loss_file.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
-        self.critic_loss_file.flush()
+    def write_critic_loss(self, total_iterations, iteration_num, critic_loss, critic_num=1):
+        if critic_num == 1:
+            self.critic_loss_file_1.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
+            self.critic_loss_file_1.flush()
+        if critic_num == 2:
+            self.critic_loss_file_2.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
+            self.critic_loss_file_2.flush()
 
     def write_dist_to_target(self, episode, total_timesteps, distance_to_target):
         self.dist_file.write('\n{},{},{}'.format(episode, total_timesteps, distance_to_target))

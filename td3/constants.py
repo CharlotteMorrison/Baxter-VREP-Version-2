@@ -3,11 +3,12 @@ from datetime import datetime
 from td3.reports import report
 
 # testing constants
-MAX_EPISODE = 6000  # stop the training early and test the results
+MAX_EPISODE = 1000  # stop the training early and test the results
 
 # flags
 set_seed = True
-MODE = 'independent'  # cooperative combines actions for training, independent uses two sep. actions
+MODE = 'separate'  # cooperative combines actions for training, independent uses independent actors/shared critic
+# separate each arm learns completely independent with only shared reward/memory
 
 timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
 DEFAULT_NAME = "Baxter_TD3_" + MODE
