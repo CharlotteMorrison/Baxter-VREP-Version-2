@@ -29,8 +29,8 @@ class report:
         self.evaluation_file.write('episode,reward')
 
     def write_eval_reward(self, episode, reward):
-        self.solved_file.write('\n{}'.format(episode, reward))
-        self.solved_file.flush()
+        self.evaluation_file.write('\n{}'.format(episode, reward))
+        self.evaluation_file.flush()
 
     def write_solved(self, episode, solved_on_step):
         self.solved_file.write('\n{},{}'.format(episode, solved_on_step))
