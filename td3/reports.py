@@ -2,7 +2,7 @@ from datetime import datetime
 import td3.constants as cons
 
 
-class Report:
+class Reports:
 
     def __init__(self):
         """
@@ -16,10 +16,10 @@ class Report:
         timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
 
         # create files for each episode
-        self.step_report = open("td3/results/reports/A_{}_step_report_{}.csv".format(cons.MODE, timestr), "w+")
-        self.actor_report = open("td3/results/reports/B_{}_actor_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
-        self.critic_report = open("td3/results/reports/C_{}_critic_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
-        self.error_report = open("td3/results/reports/D_{}_error_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.step_report = open("results/reports/A_{}_step_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.actor_report = open("results/reports/B_{}_actor_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.critic_report = open("results/reports/C_{}_critic_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.error_report = open("results/reports/D_{}_error_report_{}.csv".format(cons.MODE, timestr), "w+")
 
         # write headers for files
         self.step_report.write("episode,step,reward,step_distance_moved,step_distance_target,solved,time_elapsed")

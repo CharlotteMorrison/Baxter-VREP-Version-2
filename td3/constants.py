@@ -1,6 +1,6 @@
 import torch
 from datetime import datetime
-from td3.reports import report
+
 
 # testing constants
 MAX_EPISODE = 6000  # stop the training early and test the results
@@ -18,8 +18,6 @@ ALL_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_all_" + timestr +
 END_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_final_" + timestr + ".png"
 AVG_10_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_last_10_average_" + timestr + ".png"
 EPISODE_LENGTH_NAME = "td3/results/plots/" + DEFAULT_NAME + "_episode_length_" + timestr + ".png"
-
-TD3_REPORT = report()
 
 # Program run constants
 SEED = 0
