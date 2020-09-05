@@ -1,89 +1,108 @@
 from datetime import datetime
-import time
+import td3.constants as cons
 
 
-class report:
+class Report:
 
     def __init__(self):
-        # open files
+        """
+        Reports Needed:
+        + step report: episode, step, reward, step_distance_moved, step_distance_target , solved, time_elapsed
+        + actor loss report: episode, step, actor_1_loss, actor_2_loss
+        + critic loss report: episode, step, critic_1_loss, critic_2_loss
+        + error report: episode, step, error
+        """
+        # get date for the run
         timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
-        self.step_file = open("td3/results/reports/TD3_results_step_{}.csv".format(timestr), "w+")
-        self.episode_file = open("td3/results/reports/TD3_results_episode_{}.csv".format(timestr), "w+")
-        self.dist_file = open("td3/results/reports/TD3_distance_to_target_{}.csv".format(timestr), "w+")
-        self.actor_loss_file_1 = open("td3/results/reports/TD3_actor_loss_1_{}.csv".format(timestr), "w+")
-        self.actor_loss_file_2 = open("td3/results/reports/TD3_actor_loss_2_{}.csv".format(timestr), "w+")
-        self.critic_loss_file_1 = open("td3/results/reports/TD3_critic_loss_1_{}.csv".format(timestr), "w+")
-        self.critic_loss_file_2 = open("td3/results/reports/TD3_critic_loss_2_{}.csv".format(timestr), "w+")
-        self.solved_file = open("td3/results/reports/TD3_solved_{}.csv".format(timestr), "w+")
-        self.evaluation_file = open("td3/results/reports/TD3_evaluation_{}.csv".format(timestr), "w+")
-        # write headers
-        self.step_file.write("Step,Reward,Avg_Reward_Last_100,Avg_Reward_Last_1000,Avg_Reward_All,Time_Elapsed")
-        self.episode_file.write("Episode,Steps_In_Episode,Total_Steps,Mean_Episode_Reward,Mean_Reward_All,"
-                                "Solved, Reward, Memory_used,Time_Elapsed,Solved")
-        self.dist_file.write("episode,total_timesteps, distance_to_target")
-        self.actor_loss_file_1.write('total_iterations, iteration_num, actor_loss')
-        self.actor_loss_file_2.write('total_iterations, iteration_num, actor_loss')
-        self.critic_loss_file_1.write('total_iterations, iteration_num, critic_loss')
-        self.critic_loss_file_1.write('total_iterations, iteration_num, critic_loss')
-        self.solved_file.write('episode,solved_on_step')
-        self.evaluation_file.write('episode,reward')
 
-    def write_eval_reward(self, episode, reward):
-        self.evaluation_file.write('\n{}'.format(episode, reward))
-        self.evaluation_file.flush()
+        # create files for each episode
+        self.step_report = open("td3/results/reports/A_{}_step_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.actor_report = open("td3/results/reports/B_{}_actor_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.critic_report = open("td3/results/reports/C_{}_critic_loss_report_{}.csv".format(cons.MODE, timestr), "w+")
+        self.error_report = open("td3/results/reports/D_{}_error_report_{}.csv".format(cons.MODE, timestr), "w+")
 
-    def write_solved(self, episode, solved_on_step):
-        self.solved_file.write('\n{},{}'.format(episode, solved_on_step))
-        self.solved_file.flush()
+        # write headers for files
+        self.step_report.write("episode,step,reward,step_distance_moved,step_distance_target,solved,time_elapsed")
+        self.actor_report.write("episode,step,actor_1_loss,actor_2_loss")
+        self.critic_report.write("episode,step,critic_1_loss,critic_2_loss")
+        self.error_report.write("episode,step,error")
 
-    def write_actor_loss(self, total_iterations, iteration_num, actor_loss, actor_num):
-        if actor_num == 2:
-            actor_file = self.actor_loss_file_2
-        else:
-            actor_file = self.actor_loss_file_1
-        actor_file.write('\n{},{},{}'.format(total_iterations, iteration_num, actor_loss))
-        actor_file.flush()
+        # create temp storage lists
+        self.step_list = []
+        self.actor_list = []
+        self.critic_list = []
+        self.error_list = []
 
-    def write_critic_loss(self, total_iterations, iteration_num, critic_loss, critic_num=1):
-        if critic_num == 1:
-            self.critic_loss_file_1.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
-            self.critic_loss_file_1.flush()
-        if critic_num == 2:
-            self.critic_loss_file_2.write('\n{},{},{}'.format(total_iterations, iteration_num, critic_loss))
-            self.critic_loss_file_2.flush()
+        # store data for each timestep in the report
+        def report_step(episode, step, reward, step_distance_moved, step_distance_target, solved, time_elapsed):
+            """
+            Records the episode training results at each timestep
+            :param int episode: the episode number
+            :param int step: the current timestep
+            :param float reward: reward at current timestep
+            :param float step_distance_moved: distance moved by the end joint during the episode
+            :param float step_distance_target: distance between the target and the end joint at the end of the episode
+            :param boolean solved: whether the episode is solved or not
+            :param time_elapsed: training time elapsed since the start of training
+            """
+            # add all the data to the list
+            self.step_list.append([episode, step, reward, step_distance_moved, step_distance_target, solved, time_elapsed])
+            # check for save interval if interval, write to file, reset storage list
+            if len(self.step_list) is 100:
+                # write to the file
+                write_report(self.step_report, self.step_list)
+                # reset file for next batch
+                self.step_list = []
 
-    def write_dist_to_target(self, episode, total_timesteps, distance_to_target):
-        self.dist_file.write('\n{},{},{}'.format(episode, total_timesteps, distance_to_target))
-        self.dist_file.flush()
+        def report_actor(episode, step, actor_1_loss, actor_2_loss):
+            """
+            Records the actor loss for each training step
+            :param int episode: the current episode number
+            :param int step: the current timestep
+            :param float actor_1_loss: loss value from actor 1
+            :param float actor_2_loss: loss value from actor 2
+            """
+            self.actor_list.append([episode, step, actor_1_loss, actor_2_loss])
+            if len(self.actor_list) is 100:
+                write_report(self.actor_report, self.actor_list)
+                self.actor_list = []
 
-    def write_step(self, values, elapsed_time):
-        reward = values[-1]
-        mean_all = sum(values)/len(values)
+        def report_critic(episode, step, critic_1_loss, critic_2_loss):
+            """
+            Records the critic loss for each training step
+            :param int episode: the current episode number
+            :param int step: the current timestep
+            :param float critic_1_loss: loss value from critic 1
+            :param float critic_2_loss: loss value from critic 2
+            """
+            self.critic_list.append([episode, step, critic_1_loss, critic_2_loss])
+            if len(self.critic_list) is 100:
+                write_report(self.critic_report, self.critic_list)
+                self.critic_list = []
 
-        # mean rewards
-        if len(values) >= 100:
-            mean_100 = sum(values[-100:])/100
-        else:
-            mean_100 = 'null'
+        def report_error(episode, step, error):
+            """
+            Records the error at each training step
+            :param int episode: the current episode number
+            :param int step: the current step
+            :param float error: the error value
+            :return:
+            """
+            # TODO need to get the error values in TD3, then update this function
+            self.error_list.append([episode, step, error])
+            if len(self.error_list) is 100:
+                write_report(self.error_report, self.error_list)
+                self.error_list = []
 
-        if len(values) >= 1000:
-            mean_1000 = sum(values[-1000:])/1000
-        else:
-            mean_1000 = 'null'
+        # periodically write the data to the file, reinitialize the list
+        def write_report(report_file, write_list):
+            """
+            writes list of values to the specified report
+            :param String report_file: name of the report to write
+            :param list write_list: list of the values to append to the report
+            """
+            # write all lines to file
+            for row in write_list:
+                report_file.write("%s\n" % ','.join(str(col) for col in row))
 
-        if len(values) >= 10000:
-            mean_10000 = sum(values[-10000:])/10000
-        else:
-            mean_10000 = 'null'
 
-        self.step_file.write('\n{},{},{},{},{},{},{}'.format(len(values), reward, mean_100, mean_1000, mean_10000,
-                                                             mean_all, time.strftime("%H:%M:%S",
-                                                                                     time.gmtime(elapsed_time))))
-        self.step_file.flush()
-
-    def write_episode(self, episode, steps, total, mean_episode, mean_all, solved, reward, sys, t):
-
-        self.episode_file.write('\n{},{},null,null,{},{},{},{},{},{}'.format(episode, steps, total, mean_episode,
-                                                                             mean_all, solved, reward, sys,
-                                                                             time.strftime("%H:%M:%S", time.gmtime(t))))
-        self.episode_file.flush()
