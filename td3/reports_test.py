@@ -13,10 +13,18 @@ if __name__ == "__main__":
 
     # fills reports with dummy values for testing
     counter = 0
-    for i in range(1000):
+    anneal = .001
+    for i in range(10000):
         for j in range(random.randint(1, 25)):
             counter += 1
-            report.write_report_step(i, counter, random.random(), random.random(), random.random(), False, 'date')
+            anneal += (.00001 * random.randint(-1, 2))
+            report.write_report_step(i,
+                                     counter,
+                                     random.random() + anneal,
+                                     random.random() + anneal,
+                                     random.random() + anneal,
+                                     False,
+                                     'date')
             report.write_report_actor(i, counter, random.random(), random.random())
             report.write_report_critic(i, counter, random.random(), random.random())
             report.write_report_error(i, counter, random.random())
