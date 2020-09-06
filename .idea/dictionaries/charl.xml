@@ -21,6 +21,7 @@
       <w>timesteps</w>
       <w>timestr</w>
       <w>vrep</w>
+      <w>whitegrid</w>
     </words>
   </dictionary>
 </component>

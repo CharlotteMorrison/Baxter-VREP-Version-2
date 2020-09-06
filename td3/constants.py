@@ -1,23 +1,14 @@
+from reports import Reports
 import torch
-from datetime import datetime
 
 
 # testing constants
 MAX_EPISODE = 6000  # stop the training early and test the results
 
+TD3_REPORT = Reports()
+
 # flags
 set_seed = True
-MODE = 'separate'  # cooperative combines actions for training, independent uses independent actors/shared critic
-# separate each arm learns completely independent with only shared reward/memory
-
-timestr = datetime.now().strftime("%d-%m-%Y_%I-%M-%S_%p")
-DEFAULT_NAME = "Baxter_TD3_" + MODE
-model_file = "td3/results/models/" + DEFAULT_NAME + "_model_" + timestr + ".pth"
-EPISODE_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_episode_" + timestr + ".png"
-ALL_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_all_" + timestr + ".png"
-END_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_reward_final_" + timestr + ".png"
-AVG_10_PLOT_NAME = "td3/results/plots/" + DEFAULT_NAME + "_last_10_average_" + timestr + ".png"
-EPISODE_LENGTH_NAME = "td3/results/plots/" + DEFAULT_NAME + "_episode_length_" + timestr + ".png"
 
 # Program run constants
 SEED = 0

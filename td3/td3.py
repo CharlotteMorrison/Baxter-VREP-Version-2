@@ -1,6 +1,6 @@
-import td3.constants as cons
-from td3.actor import Actor
-from td3.critic import Critic
+import constants as cons
+from actor import Actor
+from critic import Critic
 import numpy as np
 import torch
 import torch.nn.functional as F
