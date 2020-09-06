@@ -36,7 +36,6 @@ class TD3(object):
             Returns:
                 action (list): nn action results
         """
-
         state = torch.FloatTensor(state).to(cons.DEVICE)
         action = self.actor(state)
         # action space noise introduces noise to change the likelihoods of each action the agent might take

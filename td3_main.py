@@ -11,6 +11,8 @@ from td3.td3_separate import TD3Separate
 from td3.train import train
 from td3.populate import populate_buffer
 from td3.experience.schedules import LinearSchedule
+from td3 import set_mode
+from td3 import file_names as names
 
 
 if __name__ == '__main__':
@@ -19,12 +21,8 @@ if __name__ == '__main__':
     if cons.set_seed:
         torch.manual_seed(cons.SEED)
         np.random.seed(cons.SEED)
-    if cons.MODE == 'cooperative':
-        agent = TD3()
-    elif cons.MODE == 'independent':
-        agent = TD3SharedCritic()
-    else:  # can add fully independent here...
-        agent = TD3Separate()
+
+    agent = TD3(set_mode.MODE)
 
     sim = VrepSim()
     sim.reset_sim()
@@ -41,12 +39,7 @@ if __name__ == '__main__':
     populate_buffer(sim, replay_buffer)
     train(agent, sim, replay_buffer)
 
+    # TODO test that this is working for all (update in TD3) update file names for mult actor/critics
     # possible evaluation
-
-    if cons.MODE == 'cooperative':
-        agent.load(directory="td3/saves/dual_agent")
-    elif cons.MODE == 'independent':
-        agent.load(directory="td3/saves/shared_agent")
-    else:
-        agent.load(directory="td3/saves/separate_agent")
+    agent.load(directory=names.MODEL_DIRECTORY)
     evaluate_policy(agent, sim)

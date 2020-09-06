@@ -49,7 +49,6 @@ class TD3SharedCritic(object):
             Returns:
                 action (list): nn action results
         """
-
         state = torch.FloatTensor(state).to(cons.DEVICE)
         if actor == "right":
             action = self.actor_1(state)

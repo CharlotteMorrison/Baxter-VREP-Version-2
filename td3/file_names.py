@@ -20,7 +20,11 @@ CRITIC_REPORT = open(CRITIC_REPORT_NAME, "w+")
 ERROR_REPORT = open(ERROR_REPORT_NAME, "w+")
 
 # model save file
-model_file_name = "models/{}/{}_model_{}.pth".format(set_mode.MODE, set_mode.MODE, timestr)
+ACTOR_1 = 'models/{}/{}_{}.pth'.format('actor_1', set_mode.MODE, timestr)
+ACTOR_2 = 'models/{}/{}_{}.pth'.format('actor_2', set_mode.MODE, timestr)
+CRITIC_1 = 'models/{}/{}_{}.pth'.format('critic_1', set_mode.MODE, timestr)
+CRITIC_2 = 'models/{}/{}_{}.pth'.format('critic_2', set_mode.MODE, timestr)
+MODEL_DIRECTORY = "models/{}".format(set_mode.MODE)
 
 # graph save files based on step report
 ALL_TIMESTEP_REWARD = "results/plots/{}_all_timestep_reward_{}.png".format(set_mode.MODE, timestr)
@@ -35,7 +39,8 @@ MIN_DISTANCE_TO_TARGET = "results/plots/{}_min_distance_to_target_{}.png".format
 
 
 # create a list of file names
-names = [STEP_REPORT_NAME, ACTOR_REPORT_NAME, CRITIC_REPORT_NAME, ERROR_REPORT_NAME, model_file_name,
+names = [STEP_REPORT_NAME, ACTOR_REPORT_NAME, CRITIC_REPORT_NAME, ERROR_REPORT_NAME,
+         ACTOR_1, ACTOR_2, CRITIC_1, CRITIC_2,
          ALL_TIMESTEP_REWARD, AVG_REWARD_EPISODE, AVG_ROLLING_REWARD,
          EPISODE_LENGTH, TOTAL_EPISODE_DISTANCE, MIN_DISTANCE_TO_TARGET]
 
