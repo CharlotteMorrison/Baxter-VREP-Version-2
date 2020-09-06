@@ -21,7 +21,7 @@ if __name__ == "__main__":
             report.write_report_critic(i, counter, random.random(), random.random())
             report.write_report_error(i, counter, random.random())
 
-    graph.all_timestep_reward()
+    graph.update_step_list_graphs()
 
 
 

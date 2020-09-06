@@ -5,6 +5,7 @@ import torch
 # testing constants
 MAX_EPISODE = 6000  # stop the training early and test the results
 
+# TODO move this to a more logical place- but beware circular dependencies
 TD3_REPORT = Reports()
 
 # flags
