@@ -234,7 +234,7 @@ class VrepSim(object):
     def step_arms(self, right_action, left_action):
         right_new_position = self.step_right(right_action)
         left_new_position = self.step_left(left_action)
-
+        # TODO get the arms to move simultaneously
         # move the arm joints
         for x in range(0, 7):
             vrep.simxSetJointTargetPosition(self.clientID, self.right_joint_array[x], right_new_position[x],
@@ -275,7 +275,6 @@ class VrepSim(object):
             pow((self.right_xyz_hand[2] - self.left_xyz_hand[2]), 2))
 
         return distance
-
 
     def get_target_position(self):
         error_code, xyz_position = vrep.simxGetObjectPosition(self.clientID, self.main_target, -1,

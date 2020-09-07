@@ -6,8 +6,6 @@ from evaluate import evaluate_policy
 from td3.experience.priority_replay_buffer import PrioritizedReplayBuffer
 from td3.experience.replay_buffer import ReplayBuffer
 from td3.td3 import TD3
-from td3.td3_shared_critic import TD3SharedCritic
-from td3.td3_separate import TD3Separate
 from td3.train import train
 from td3.populate import populate_buffer
 from td3.experience.schedules import LinearSchedule
@@ -34,6 +32,8 @@ if __name__ == '__main__':
         cons.BETA_SCHED = LinearSchedule(cons.BETA_ITERS, initial_p=cons.BETA, final_p=1.0)
     else:
         replay_buffer = ReplayBuffer()
+
+    # if looping through, make sure to change the time for the save files!
 
     # initialize_min_buffer(sim, replay_buffer)
     populate_buffer(sim, replay_buffer)

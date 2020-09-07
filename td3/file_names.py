@@ -37,10 +37,13 @@ MIN_DISTANCE_TO_TARGET = "results/plots/{}_min_distance_to_target_{}.png".format
 # graph save files for other reports
 # TODO implement other report files (actor, critic, and error)
 
+# save files for videos
+EPISODE_VIDEO = "videos/{}_video_{}.png".format(set_mode.MODE, timestr)
+EPISODE_VIDEO_SOLVED = "videos/{}_video_{}_solved.png".format(set_mode.MODE, timestr)
 
 # create a list of file names
 names = [STEP_REPORT_NAME, ACTOR_REPORT_NAME, CRITIC_REPORT_NAME, ERROR_REPORT_NAME,
-         ACTOR_1, ACTOR_2, CRITIC_1, CRITIC_2,
+         ACTOR_1, ACTOR_2, CRITIC_1, CRITIC_2, EPISODE_VIDEO, EPISODE_VIDEO_SOLVED,
          ALL_TIMESTEP_REWARD, AVG_REWARD_EPISODE, AVG_ROLLING_REWARD,
          EPISODE_LENGTH, TOTAL_EPISODE_DISTANCE, MIN_DISTANCE_TO_TARGET]
 

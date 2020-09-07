@@ -29,10 +29,15 @@ def target_movement_reward(start_loc, end_loc,  target_loc):
                                  math.pow(y3 - y1, 2) +
                                  math.pow(z3 - z1, 2) * 1.0)
     # ending location to target location distance
-    new_distance = math.sqrt(math.pow(x3 - x2, 2) +
-                             math.pow(y3 - y2, 2) +
-                             math.pow(z3 - z2, 2) * 1.0)
+    distance_to_target = math.sqrt(math.pow(x3 - x2, 2) +
+                                   math.pow(y3 - y2, 2) +
+                                   math.pow(z3 - z2, 2) * 1.0)
+
+    # the distance moved during the step (starting position to ending position
+    distance_moved = math.sqrt(math.pow(x2 - x1, 2) +
+                               math.pow(y2 - y1, 2) +
+                               math.pow(z2 - z1, 2) * 1.0)
 
     # difference between starting distance and ending distance from the target
-    reward = initial_distance - new_distance
-    return reward, new_distance
+    reward = initial_distance - distance_to_target
+    return reward, distance_moved, distance_to_target

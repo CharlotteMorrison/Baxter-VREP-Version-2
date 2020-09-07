@@ -16,7 +16,7 @@ SEED = 0
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('Device: {}'.format(DEVICE))
 num_frames = 300000
-VIDEO_INTERVAL = 1  # change to 1 to record all videos
+VIDEO_INTERVAL = 100  # change to 1 to record all videos
 NUM_FRAMES_STACKED = 4
 XYZ_GOAL = [.2, .1, 1.2]  # More specific goal numbers [0.231, 0.105, 1.261]
 SOLVED_DISTANCE = 1.0  #

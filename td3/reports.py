@@ -47,7 +47,6 @@ class Reports:
             # reset file for next batch
             self.step_list = []
 
-    # TODO deal with varying amounts of actors, could use list of actor loss to deal with multiples
     def write_report_actor(self, episode, step, actor_1_loss, actor_2_loss=0):
         """
         Records the actor loss for each training step
@@ -63,7 +62,6 @@ class Reports:
             self.write_report(names.ACTOR_REPORT, self.actor_list)
             self.actor_list = []
 
-    # TODO deal with varying amounts of actors
     def write_report_critic(self, episode, step, critic_1_loss, critic_2_loss=0):
         """
         Records the critic loss for each training step

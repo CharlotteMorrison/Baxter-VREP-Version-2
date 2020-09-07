@@ -7,7 +7,7 @@ import globals as glo
 import file_names as names
 
 
-class TD3Separate(object):
+class TD3(object):
     """Agent class that handles the training of the networks
     and provides outputs as actions.
     """
