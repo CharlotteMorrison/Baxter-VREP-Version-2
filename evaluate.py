@@ -2,6 +2,7 @@ import td3.constants as cons
 from utils import output_video
 import td3.rewards as rew
 import statistics as sta
+import set_mode
 
 
 def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
@@ -25,12 +26,12 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             target_start = sim.get_target_position()
 
             # get action by policy
-            if cons.MODE == 'cooperative':
+            if set_mode.MODE == 'cooperative':
                 action = policy.select_action(state, noise=0)
                 # apply action and get new state
                 right_state, left_state = sim.step_arms(action[:7], action[7:])
 
-            elif cons.MODE == 'independent' or cons.MODE == 'separate':
+            elif set_mode.MODE == 'independent' or cons.MODE == 'separate':
                 right_action = policy.select_action(right_pos, 'right', noise=0)
                 left_action = policy.select_action(left_pos, 'left', noise=0)
                 right_state, left_state = sim.step_arms(right_action, left_action)

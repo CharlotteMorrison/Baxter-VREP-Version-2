@@ -1,5 +1,6 @@
 from reports import Reports
 import torch
+from torch import backends
 
 
 # testing constants
@@ -36,7 +37,6 @@ BETA_SCHED = None   # do you want manually scheduled beta
 EXPLORATION = 5000000
 OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
-REWARD_THRESH = 1.10
 BATCH_SIZE = 100
 BUFFER_SIZE = 20000  # shrunk from 1,000,000
 GAMMA = 0.99  # discount

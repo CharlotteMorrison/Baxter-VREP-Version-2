@@ -8,6 +8,71 @@ import platform
 import td3.rewards as rew
 
 
+def populate_buffer_zeros(sim, replay_buffer):
+    print("\nInitializing experience replay buffer...")
+    buffer_storage = []
+    replay_counter = 0
+
+    # open the file
+    if platform.system() == 'Windows':
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-zeros.pkl"
+    else:
+        file_loc = "td3/temp/buffer-zeros.pkl"
+
+    # read the file and add values to buffer
+    with open(file_loc, "rb") as pk_file:
+        while True:
+            try:
+                data = pickle.load(pk_file)
+                for test in data:
+                    replay_buffer.add(test[0], test[1], test[2], test[3], test[4])
+                    buffer_storage.append([test[0], test[1], test[2], test[3], test[4]])
+                    replay_counter += 1
+                    if replay_counter >= cons.BUFFER_SIZE:
+                        break
+            except EOFError:
+                print('Reached end of file.')
+                break
+            except pickle.UnpicklingError:
+                print('Incomplete record {} was ignored.'.format(replay_counter + 1))
+                break
+    buffer = cons.BUFFER_SIZE - replay_counter
+    print('Buffer size {}/{} loaded from previous session'.format(replay_counter, cons.BUFFER_SIZE))
+
+    # no movements- simulating actions of 0 only
+    right_pos, left_pos = sim.get_current_position()
+    state = right_pos + left_pos
+    next_state = state
+    done = False  # start with initial state of done == false
+    reward = 0
+
+    for x in range(buffer):
+        # give action of all zeros
+        action = []
+        for i in range(14):
+            action.append(0)
+
+        replay_buffer.add(state, action, reward, next_state, done)
+        buffer_storage.append([state, action, reward, next_state, done])
+
+        if x % 50 == 0:
+            save_buffer = open(file_loc, "ab")
+            pickle.dump(buffer_storage, save_buffer)
+            save_buffer.close()
+            buffer_storage = []
+
+        if x % 1000 == 0 and x < cons.BUFFER_SIZE - 1000 and x != 0:
+            print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
+
+        elif x == cons.BUFFER_SIZE - 1:
+            print("{} of {} loaded".format(x + replay_counter + 1, cons.BUFFER_SIZE))
+            save_buffer = open(file_loc, "ab")
+            pickle.dump(buffer_storage, save_buffer)
+            save_buffer.close()
+    print("\nExperience replay buffer initialized.")
+    sys.stdout.flush()
+
+
 def populate_buffer(sim, replay_buffer):
     print("\nInitializing experience replay buffer...")
     buffer_storage = []

@@ -1,6 +1,6 @@
 import numpy as np
 import td3.constants as cons
-from utils import output_video, plot_results
+from utils import output_video
 import time
 import psutil
 import torch
@@ -10,6 +10,8 @@ import set_mode
 from statistics import mean
 import file_names as names
 from graphs import Graphs
+import GPUtil
+import gc
 
 
 def train(agent, sim, replay_buffer):
@@ -49,13 +51,28 @@ def train(agent, sim, replay_buffer):
         solved = False  # reset each episode as unsolved
         rewards = []  # used to store the episode rewards, used to average the rewards.
         collision_count = 0
-
+        episode_length = 0
         # -------------------------------------------------------------------------------------------------
         # Start Episode
         # -------------------------------------------------------------------------------------------------
         while True:
             glo.TIMESTEP += 1
+            episode_length += 1
+            # check memory utilization
 
+            GPUtil.showUtilization()
+            print(torch.cuda.memory_allocated())
+
+            count_objs = 0
+
+            for obj in gc.get_objects():
+                try:
+                    if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                        # print(type(obj), obj.size())
+                        count_objs += 1
+                except:
+                    pass
+            print("Total objects in GPU memory: {}".format(count_objs))
             # get the initial location of the target object
             target_start = sim.get_target_position()
 
@@ -127,10 +144,10 @@ def train(agent, sim, replay_buffer):
                 reward = -1  # was zero, try a big, bad reward when you drop it
 
             # update the replay buffer with new tuple
-            replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward, new_state, done)
+            replay_buffer.add(state, action, reward, new_state, done)
 
             # training step
-            agent.train(replay_buffer, cons.BATCH_SIZE)
+            agent.train(replay_buffer, episode_length)
 
             # set the state to the new state for the next step
             state = new_state
@@ -140,8 +157,6 @@ def train(agent, sim, replay_buffer):
 
             # add the reward to the reward list
             rewards.append(reward)
-
-            episode_length = len(rewards)
 
             if episode_length == 50:   # stop after 50 attempts, 30 was too low to reach goal, tried 45.
                 done = True  # stop after 50 attempts, was getting stuck flipping from bad to good.

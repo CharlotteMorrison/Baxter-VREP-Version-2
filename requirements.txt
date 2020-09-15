@@ -28,3 +28,4 @@ torchvision==0.4.2
 
 seaborn~=0.10.1
 pandas~=1.1.1
+GPUtil~=1.4.0

@@ -7,7 +7,7 @@ from td3.experience.priority_replay_buffer import PrioritizedReplayBuffer
 from td3.experience.replay_buffer import ReplayBuffer
 from td3.td3 import TD3
 from td3.train import train
-from td3.populate import populate_buffer
+from td3.populate import populate_buffer, populate_buffer_zeros
 from td3.experience.schedules import LinearSchedule
 from td3 import set_mode
 from td3 import file_names as names
@@ -35,11 +35,14 @@ if __name__ == '__main__':
 
     # if looping through, make sure to change the time for the save files!
 
-    # initialize_min_buffer(sim, replay_buffer)
-    populate_buffer(sim, replay_buffer)
+    # create and populate a buffer of all zero actions
+    populate_buffer_zeros(sim, replay_buffer)
+
+    # populate buffer with random actions
+    # populate_buffer(sim, replay_buffer)
     train(agent, sim, replay_buffer)
 
     # TODO test that this is working for all (update in TD3) update file names for mult actor/critics
     # possible evaluation
-    agent.load(directory=names.MODEL_DIRECTORY)
+    agent.load()
     evaluate_policy(agent, sim)

@@ -13,9 +13,11 @@ class Graphs:
         plt.style.use('seaborn')
         self.datafile = pd.DataFrame()
         self.episode_df = pd.DataFrame()
+        self.show_graphs = False
 
     def update_step_list_graphs(self):
         # load the datafile
+        plt.close("all")
         headers = ["episode", "step", "reward", "step_distance_moved", "step_distance_target", "solved", "time_elapsed"]
         self.datafile = pd.DataFrame(globals.STEP_LIST, columns=headers)
         # datafile group by episode
@@ -39,7 +41,8 @@ class Graphs:
         plt.ylabel('Reward')
         plt.legend()
         plt.savefig(names.ALL_TIMESTEP_REWARD)
-        # plt.show()
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     def avg_reward_episode(self):
@@ -49,7 +52,8 @@ class Graphs:
         plt.ylabel('Reward')
         plt.legend()
         plt.savefig(names.AVG_REWARD_EPISODE)
-        # plt.show()
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     def rolling_average_reward(self):
@@ -75,7 +79,8 @@ class Graphs:
         ax[3].legend()
 
         plt.savefig(names.AVG_ROLLING_REWARD)
-        # plt.show()
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     def episode_length(self):
@@ -85,7 +90,8 @@ class Graphs:
         plt.ylabel('Steps In Episode')
         plt.legend()
         plt.savefig(names.EPISODE_LENGTH)
-        # plt.show()
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     def total_episode_distance(self):
@@ -95,8 +101,9 @@ class Graphs:
         plt.xlabel('Episode')
         plt.ylabel('Total Distance Moved')
         plt.legend()
-        plt.savefig(names.EPISODE_LENGTH)
-        # plt.show()
+        plt.savefig(names.TOTAL_EPISODE_DISTANCE)
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     def min_distance_to_target(self):
@@ -106,8 +113,9 @@ class Graphs:
         plt.xlabel('Episode')
         plt.ylabel('Distance to Target')
         plt.legend()
-        plt.savefig(names.EPISODE_LENGTH)
-        # plt.show()
+        plt.savefig(names.MIN_DISTANCE_TO_TARGET)
+        if self.show_graphs:
+            plt.show()
         plt.close()
 
     # TODO implement other reports (actor, critic, and error)

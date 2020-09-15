@@ -1,6 +1,8 @@
-import torch
 import cv2
-import matplotlib.pyplot as plt
+import collections
+import gc
+# import resource
+import torch
 
 
 def load_model(model_file):
@@ -29,23 +31,14 @@ def output_video(episode, video_array, size, default_name):
         out.write(video_array[x])
     out.release()
 
-
-def plot_results(rewards_total_episode, plot_save, plot_name):
-    plt.figure(figsize=(12, 5))
-    plt.title(plot_name)
-    plt.xlabel('Episodes')
-    plt.ylabel('Average Reward')
-    plt.plot(rewards_total_episode, alpha=0.6, color='red')
-    plt.savefig(plot_save)
-    plt.close()
-
-
-def plot_episode_length(episode_length, plot_save, plot_name):
-    plt.figure(figsize=(12, 5))
-    plt.title(plot_name)
-    plt.xlabel('Episodes')
-    plt.ylabel('Episode Length')
-    plt.plot(episode_length, alpha=0.6, color='blue')
-    plt.savefig(plot_save)
-    plt.close()
-
+'''
+def debug_memory():
+    # https://forum.pyro.ai/t/a-clever-trick-to-debug-tensor-memory/556
+    print('maxrss = {}'.format(
+        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+    tensors = collections.Counter((str(o.device), o.dtype, tuple(o.shape))
+                                  for o in gc.get_objects()
+                                  if torch.is_tensor(o))
+    for line in sorted(tensors.items()):
+        print('{}\t{}'.format(*line))
+'''
