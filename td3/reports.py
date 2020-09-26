@@ -56,7 +56,10 @@ class Reports:
         :param tensor actor_1_loss: loss value from actor 1
         :param tensor actor_2_loss: loss value from actor 2
         """
-        record = [episode, step, actor_1_loss.item(), actor_2_loss.item()]
+        if actor_2_loss != 0:
+            actor_2_loss = actor_2_loss.item()
+
+        record = [episode, step, actor_1_loss.item(), actor_2_loss]
         self.actor_list.append(record)
         globals.ACTOR_LIST.append(record)
         if len(self.actor_list) is 100:
@@ -71,7 +74,9 @@ class Reports:
         :param tensor critic_1_loss: loss value from critic 1
         :param tensor critic_2_loss: loss value from critic 2
         """
-        record = [episode, step, critic_1_loss.item(), critic_2_loss.item()]
+        if critic_2_loss != 0:
+            critic_2_loss = critic_2_loss.item()
+        record = [episode, step, critic_1_loss.item(), critic_2_loss]
         self.critic_list.append(record)
         globals.CRITIC_LIST.append(record)
         if len(self.critic_list) is 100:
