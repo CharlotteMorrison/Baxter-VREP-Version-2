@@ -27,7 +27,6 @@ CRITIC_2 = 'td3/models/{}/{}_{}.pth'.format(set_mode.MODE, 'critic_2', timestr)
 MODEL_DIRECTORY = "td3/models/{}".format(set_mode.MODE)
 
 # graph save files based on step report
-ALL_TIMESTEP_REWARD = "td3/results/plots/{}_all_timestep_reward_{}.png".format(set_mode.MODE, timestr)
 AVG_REWARD_EPISODE = "td3/results/plots/{}_avg_reward_episode_{}.png".format(set_mode.MODE, timestr)
 AVG_ROLLING_REWARD = "td3/results/plots/{}_avg_rolling_reward_{}.png".format(set_mode.MODE, timestr)
 EPISODE_LENGTH = "td3/results/plots/{}_episode_length_{}.png".format(set_mode.MODE, timestr)
@@ -35,7 +34,8 @@ TOTAL_EPISODE_DISTANCE = "td3/results/plots/{}_total_episode_distance_{}.png".fo
 MIN_DISTANCE_TO_TARGET = "td3/results/plots/{}_min_distance_to_target_{}.png".format(set_mode.MODE, timestr)
 
 # graph save files for other reports
-# TODO implement other report files (actor, critic, and error)
+ACTOR_LOSS_PLOT = "td3/results/plots/{}_actor_loss_plot_{}.png".format(set_mode.MODE, timestr)
+CRITIC_LOSS_PLOT = "td3/results/plots/{}_critic_loss_plot_{}.png".format(set_mode.MODE, timestr)
 
 # save files for videos
 EPISODE_VIDEO = "td3/videos/{}_video_{}.png".format(set_mode.MODE, timestr)
@@ -44,7 +44,7 @@ EPISODE_VIDEO_SOLVED = "td3videos/{}_video_{}_solved.png".format(set_mode.MODE, 
 # create a list of file names
 names = [STEP_REPORT_NAME, ACTOR_REPORT_NAME, CRITIC_REPORT_NAME, ERROR_REPORT_NAME,
          ACTOR_1, ACTOR_2, CRITIC_1, CRITIC_2, EPISODE_VIDEO, EPISODE_VIDEO_SOLVED,
-         ALL_TIMESTEP_REWARD, AVG_REWARD_EPISODE, AVG_ROLLING_REWARD,
+         AVG_REWARD_EPISODE, AVG_ROLLING_REWARD, ACTOR_LOSS_PLOT, CRITIC_LOSS_PLOT,
          EPISODE_LENGTH, TOTAL_EPISODE_DISTANCE, MIN_DISTANCE_TO_TARGET]
 
 # save the file names for each run

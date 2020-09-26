@@ -24,7 +24,6 @@ class Graphs:
         self.episode_df = self.datafile.groupby(['episode']).mean()
 
         # run the graphs
-        self.all_timestep_reward()
         self.avg_reward_episode()
 
         # include a rolling average for 10, 100, and 1000 episodes
@@ -33,17 +32,6 @@ class Graphs:
         self.episode_length()
         self.total_episode_distance()
         self.min_distance_to_target()
-
-    def all_timestep_reward(self):
-        # reward at each timestep
-        plt.plot(self.datafile['reward'], label='Timestep Reward')
-        plt.xlabel('Timestep')
-        plt.ylabel('Reward')
-        plt.legend()
-        plt.savefig(names.ALL_TIMESTEP_REWARD)
-        if self.show_graphs:
-            plt.show()
-        plt.close()
 
     def avg_reward_episode(self):
         # average reward for each episode
@@ -85,7 +73,7 @@ class Graphs:
 
     def episode_length(self):
         # counts the number of steps in each episode
-        plt.plot(self.datafile.groupby(['episode']).count(), label='Length of Episode')
+        plt.plot(self.datafile.groupby(['episode']).count()['step'], label='Length of Episode')
         plt.xlabel('Episode')
         plt.ylabel('Steps In Episode')
         plt.legend()

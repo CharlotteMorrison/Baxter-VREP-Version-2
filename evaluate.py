@@ -31,7 +31,7 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
                 # apply action and get new state
                 right_state, left_state = sim.step_arms(action[:7], action[7:])
 
-            elif set_mode.MODE == 'independent' or cons.MODE == 'separate':
+            elif set_mode.MODE == 'independent' or set_mode.MODE == 'partial':
                 right_action = policy.select_action(right_pos, 'right', noise=0)
                 left_action = policy.select_action(left_pos, 'left', noise=0)
                 right_state, left_state = sim.step_arms(right_action, left_action)

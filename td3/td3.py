@@ -231,7 +231,7 @@ class TD3(object):
                     q_action_1 = self.actor_1(split_state[0]).float().detach()
                     q_action_2 = self.actor_2(split_state[1]).float().detach()
 
-                    if self.mode == 'combined':
+                    if self.mode == 'independent':
                         actor_1_loss = -self.critic_1.get_q(split_state[0], q_action_1).mean()
                         actor_2_loss = -self.critic_2.get_q(split_state[1], q_action_2).mean()
                     else:
