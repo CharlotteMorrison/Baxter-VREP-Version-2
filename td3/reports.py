@@ -52,10 +52,10 @@ class Reports:
         Records the actor loss for each training step
         :param int episode: the current episode number
         :param int step: the current timestep
-        :param float actor_1_loss: loss value from actor 1
-        :param float actor_2_loss: loss value from actor 2
+        :param tensor actor_1_loss: loss value from actor 1
+        :param tensor actor_2_loss: loss value from actor 2
         """
-        record = [episode, step, actor_1_loss, actor_2_loss]
+        record = [episode, step, actor_1_loss.item(), actor_2_loss.item()]
         self.actor_list.append(record)
         globals.ACTOR_LIST.append(record)
         if len(self.actor_list) is 100:
@@ -67,10 +67,10 @@ class Reports:
         Records the critic loss for each training step
         :param int episode: the current episode number
         :param int step: the current timestep
-        :param float critic_1_loss: loss value from critic 1
-        :param float critic_2_loss: loss value from critic 2
+        :param tensor critic_1_loss: loss value from critic 1
+        :param tensor critic_2_loss: loss value from critic 2
         """
-        record = [episode, step, critic_1_loss, critic_2_loss]
+        record = [episode, step, critic_1_loss.item(), critic_2_loss.item()]
         self.critic_list.append(record)
         globals.CRITIC_LIST.append(record)
         if len(self.critic_list) is 100:

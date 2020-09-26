@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import globals
 import file_names as names
+import set_mode
 
 
 class Graphs:
@@ -13,6 +14,8 @@ class Graphs:
         plt.style.use('seaborn')
         self.datafile = pd.DataFrame()
         self.episode_df = pd.DataFrame()
+        self.actor_df = pd.DataFrame()
+        self.critic_df = pd.DataFrame()
         self.show_graphs = False
 
     def update_step_list_graphs(self):
@@ -22,6 +25,15 @@ class Graphs:
         self.datafile = pd.DataFrame(globals.STEP_LIST, columns=headers)
         # datafile group by episode
         self.episode_df = self.datafile.groupby(['episode']).mean()
+
+        # actor/critic datafiles
+
+        self.actor_df = pd.DataFrame(globals.ACTOR_LIST, columns=['episode', 'step', 'actor_1_loss', 'actor_2_loss'])
+        self.critic_df = pd.DataFrame(globals.CRITIC_LIST, columns=['episode', 'step', 'critic_1_loss', 'critic_2_loss'])
+
+        # graph actor/critic
+        self.avg_actor_loss()
+        self.avg_critic_loss()
 
         # run the graphs
         self.avg_reward_episode()
@@ -106,4 +118,27 @@ class Graphs:
             plt.show()
         plt.close()
 
-    # TODO implement other reports (actor, critic, and error)
+    # TODO implement error plot
+    def avg_actor_loss(self):
+        plt.plot(self.actor_df.groupby(['episode']).mean()['actor_1_loss'], label="Actor 1 Loss")
+        if set_mode.MODE != 'cooperative':
+            plt.plot(self.actor_df.groupby(['episode']).mean()['actor_2_loss'], label="Actor 2 Loss")
+        plt.xlabel('Episode')
+        plt.ylabel('Actor Loss')
+        plt.legend()
+        plt.savefig(names.ACTOR_LOSS_PLOT)
+        if self.show_graphs:
+            plt.show()
+        plt.close()
+
+    def avg_critic_loss(self):
+        plt.plot(self.critic_df.groupby(['episode']).mean()['critic_1_loss'], label="Critic 1 Loss")
+        if set_mode.MODE == 'independent':
+            plt.plot(self.critic_df.groupby(['episode']).mean()['critic_2_loss'], label="Critic 2 Loss")
+        plt.xlabel('Episode')
+        plt.ylabel('Critic Loss')
+        plt.legend()
+        plt.savefig(names.CRITIC_LOSS_PLOT)
+        if self.show_graphs:
+            plt.show()
+        plt.close()
