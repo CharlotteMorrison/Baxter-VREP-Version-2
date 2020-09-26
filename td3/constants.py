@@ -4,7 +4,6 @@ from torch import backends
 
 
 # testing constants
-# todo put in the correct value
 MAX_EPISODE = 20000  # stop the training early and test the results
 
 # don't move this- it creates circular dependencies.
