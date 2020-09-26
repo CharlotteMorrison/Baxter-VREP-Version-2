@@ -29,7 +29,6 @@ def initialize_min_buffer(sim, replay_buffer):
             right_state = sim.step_right(right_action)
             left_state = sim.step_left(left_action)
             next_state = right_state + left_state
-
         right_reward, left_reward = sim.calc_distance()
 
         right_arm_collision_state = sim.right_collision_state()

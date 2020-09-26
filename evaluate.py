@@ -7,7 +7,7 @@ import file_names
 import graphs
 
 
-def evaluate_policy(policy, sim, eval_episodes=5, episode_length=50):
+def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
     """run several episodes with the best agent policy"""
     avg_reward = []
 
@@ -57,7 +57,7 @@ def evaluate_policy(policy, sim, eval_episodes=5, episode_length=50):
             if not sim.check_suction_prox():
                 done = True
 
-            cons.report.write_evaluate_step(i, num_of_steps, reward, eval_episodes)
+            cons.report.write_evaluate_step(i + 1, num_of_steps, reward, eval_episodes)
             avg_reward.append(reward)
         output_video(video_array, cons.SIZE, file_names.EVALUATION_VIDEO, evaluate=True, eval_num=i)
 

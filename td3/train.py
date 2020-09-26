@@ -58,8 +58,9 @@ def train(agent, sim, replay_buffer):
         while True:
             glo.TIMESTEP += 1
             episode_length += 1
-            # check memory utilization
 
+            # check memory utilization
+            '''
             GPUtil.showUtilization()
             print(torch.cuda.memory_allocated())
 
@@ -73,6 +74,8 @@ def train(agent, sim, replay_buffer):
                 except:
                     pass
             print("Total objects in GPU memory: {}".format(count_objs))
+            '''
+
             # get the initial location of the target object
             target_start = sim.get_target_position()
 
@@ -135,13 +138,16 @@ def train(agent, sim, replay_buffer):
             if sim.check_suction_distance() > .32:
                 done = True
                 time.sleep(1)  # wait to allow the sim to catch up
-                reward = -1  # was zero, try a big, bad reward when you drop it
+                reward = 0  # was zero, try a big, bad reward when you drop it
+                # moved back to 0, since priority reply can't handle negs, this is only
+                # giving me an outsized negative value, not really helpful.
+                # will make the graphs look a little better, will be around the x=0 axis, not only below
 
             # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
             if not sim.check_suction_prox():
                 done = True
                 time.sleep(1)  # wait to allow the sim to catch up
-                reward = -1  # was zero, try a big, bad reward when you drop it
+                reward = 0  # was zero, try a big, bad reward when you drop it
 
             # update the replay buffer with new tuple
             replay_buffer.add(state, action, reward, new_state, done)
@@ -181,8 +187,7 @@ def train(agent, sim, replay_buffer):
                     output_video(video_array, cons.SIZE, names.EPISODE_VIDEO)
                 if solved:
                     output_video(video_array, cons.SIZE, names.EPISODE_VIDEO_SOLVED)
-                # todo remove this after stabilizing all updates
-                # Print episode information
+
                 system_info = psutil.virtual_memory()
                 if True:
                     print("\n*** Episode " + str(glo.EPISODE) + " ***")

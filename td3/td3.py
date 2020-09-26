@@ -129,11 +129,9 @@ class TD3(object):
             # split the state, next_state, and action into 2 stored in a list
             split_state = torch.chunk(state, 2, 1)
             split_next_state = torch.chunk(next_state, 2, 1)
-            # this is split on the wrong axis- # TODO figure out what this comment is about...
             split_action = torch.chunk(action, 2, 1)
 
             # with torch.no_grad():
-            # TODO get creative and refactor this so it isn't so repetitive.
             # select an action according to the policy and add clipped noise
             if self.mode == 'cooperative':
                 next_action_1 = self.actor_target_1(next_state)

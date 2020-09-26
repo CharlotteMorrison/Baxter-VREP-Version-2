@@ -4,7 +4,6 @@ import pandas as pd
 import seaborn as sns
 
 
-# TODO generalize this so it can take n- inputs for multiple runs.
 def ra_plot(run_1, run_2, run_3, run_4, window=10):
     run_avg_1 = run_1['average'].rolling(window).mean()
     run_avg_2 = run_2['average'].rolling(window).mean()

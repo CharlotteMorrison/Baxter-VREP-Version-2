@@ -143,10 +143,6 @@ class Graphs:
             plt.show()
         plt.close()
 
-    # TODO implement error plot
-    def error_plot(self):
-        pass
-
     def avg_evaluation_episode_reward(self):
         # this is only called from the evaluate
         self.evaluate_df = pd.DataFrame(globals.EVALUATE_LIST, columns=['episode', 'step', 'reward'])

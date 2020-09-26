@@ -10,11 +10,10 @@ from td3.train import train
 from td3.populate import populate_buffer, populate_buffer_zeros
 from td3.experience.schedules import LinearSchedule
 from td3 import set_mode
-from td3 import file_names as names
+import argparse
 
 
 if __name__ == '__main__':
-
     # Set seeds
     if cons.set_seed:
         torch.manual_seed(cons.SEED)
@@ -33,8 +32,6 @@ if __name__ == '__main__':
     else:
         replay_buffer = ReplayBuffer()
 
-    # if looping through, make sure to change the time for the save files!
-
     # create and populate a buffer of all zero actions
     populate_buffer_zeros(sim, replay_buffer)
 
@@ -42,7 +39,6 @@ if __name__ == '__main__':
     # populate_buffer(sim, replay_buffer)
     train(agent, sim, replay_buffer)
 
-    # TODO test that this is working for all (update in TD3) update file names for mult actor/critics
-    # possible evaluation
+    # evaluation
     agent.load()
     evaluate_policy(agent, sim)

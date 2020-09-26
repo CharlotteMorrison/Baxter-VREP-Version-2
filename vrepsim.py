@@ -263,12 +263,6 @@ class VrepSim(object):
         error_code, self.left_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.left_hand, -1,
                                                                     vrep.simx_opmode_buffer)  # left hand
 
-        # removed getting right_target location each time- using the static initial location
-        # error_code, self.right_xyz_target = vrep.simxGetObjectPosition(self.clientID, self.right_target, -1,
-        #                                                          vrep.simx_opmode_buffer)
-        # TODO set this to main target, find static point.
-        # need to check if this formula is calculating distance properly
-
         distance = math.sqrt(
             pow((self.right_xyz_hand[0] - self.left_xyz_hand[0]), 2) +
             pow((self.right_xyz_hand[1] - self.left_xyz_hand[1]), 2) +
@@ -297,12 +291,6 @@ class VrepSim(object):
                                                                      vrep.simx_opmode_buffer)  # right hand
         error_code, self.left_xyz_hand = vrep.simxGetObjectPosition(self.clientID, self.left_hand, -1,
                                                                     vrep.simx_opmode_buffer)  # left hand
-
-        # removed getting right_target location each time- using the static initial location
-        # error_code, self.right_xyz_target = vrep.simxGetObjectPosition(self.clientID, self.right_target, -1,
-        #                                                          vrep.simx_opmode_buffer)
-        # TODO set this to main target, find static point.
-        # need to check if this formula is calculating distance properly
 
         right_distance = 1 / math.sqrt(
             pow((self.right_xyz_hand[0] - self.right_xyz_target[0]), 2) +

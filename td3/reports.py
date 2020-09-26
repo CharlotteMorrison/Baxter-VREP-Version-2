@@ -86,7 +86,6 @@ class Reports:
         :param float error: the error value
         :return:
         """
-        # TODO need to get the error values in TD3, then update this function
         record = [episode, step, error]
         self.error_list.append(record)
         globals.ERROR_LIST.append(record)
