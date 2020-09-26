@@ -16,6 +16,7 @@ class Graphs:
         self.episode_df = pd.DataFrame()
         self.actor_df = pd.DataFrame()
         self.critic_df = pd.DataFrame()
+        self.evaluate_df = pd.DataFrame()
         self.show_graphs = False
 
     def update_step_list_graphs(self):
@@ -118,7 +119,6 @@ class Graphs:
             plt.show()
         plt.close()
 
-    # TODO implement error plot
     def avg_actor_loss(self):
         plt.plot(self.actor_df.groupby(['episode']).mean()['actor_1_loss'], label="Actor 1 Loss")
         if set_mode.MODE != 'cooperative':
@@ -139,6 +139,22 @@ class Graphs:
         plt.ylabel('Critic Loss')
         plt.legend()
         plt.savefig(names.CRITIC_LOSS_PLOT)
+        if self.show_graphs:
+            plt.show()
+        plt.close()
+
+    # TODO implement error plot
+    def error_plot(self):
+        pass
+
+    def avg_evaluation_episode_reward(self):
+        # this is only called from the evaluate
+        self.evaluate_df = pd.DataFrame(globals.EVALUATE_LIST, columns=['episode', 'step', 'reward'])
+        plt.plot(self.evaluate_df.groupby(['episode']).mean()['reward'], label='Reward')
+        plt.xlabel('Episode')
+        plt.ylabel('Evaluate Reward')
+        plt.legend()
+        plt.savefig(names.EVALUATION_GRAPH)
         if self.show_graphs:
             plt.show()
         plt.close()

@@ -1,7 +1,6 @@
 import cv2
 import collections
-import gc
-# import resource
+import globals as glo
 import torch
 
 
@@ -20,8 +19,11 @@ def preprocess_frame(frame, device):
     return frame
 
 
-def output_video(episode, video_array, size, default_name):
-    out = cv2.VideoWriter(default_name + "_episode-" + str(episode) + ".avi", cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+def output_video(video_array, size, save_name, evaluate=False, eval_num=0):
+    if not evaluate:
+        out = cv2.VideoWriter(save_name + "{}.avi".format(glo.EPISODE), cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+    else:
+        out = cv2.VideoWriter(save_name + "{}.avi".format(eval_num), cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
 
     last_frame = video_array[len(video_array) - 1]
 

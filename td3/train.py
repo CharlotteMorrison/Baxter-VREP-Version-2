@@ -177,12 +177,11 @@ def train(agent, sim, replay_buffer):
                     best_avg = mean_reward_episode
                     agent.save()
 
-                # TODO add new save names
-                if video_record and episode_length > 15:  # only record episodes over 15
-                    output_video(glo.EPISODE, video_array, cons.SIZE, names.EPISODE_VIDEO)
+                if video_record and episode_length > 0:  # only record episodes over 15
+                    output_video(video_array, cons.SIZE, names.EPISODE_VIDEO)
                 if solved:
-                    output_video(glo.EPISODE, video_array, cons.SIZE, names.EPISODE_VIDEO_SOLVED)
-
+                    output_video(video_array, cons.SIZE, names.EPISODE_VIDEO_SOLVED)
+                # todo remove this after stabilizing all updates
                 # Print episode information
                 system_info = psutil.virtual_memory()
                 if True:
@@ -205,6 +204,9 @@ def train(agent, sim, replay_buffer):
         system_info = psutil.virtual_memory()
         if system_info.percent > 98:
             break
+
+    # write any remaining values
+    cons.report.write_final_values()
 
     # at the end do a final update of the graphs
     graphs.update_step_list_graphs()

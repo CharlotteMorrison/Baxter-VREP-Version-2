@@ -38,13 +38,20 @@ ACTOR_LOSS_PLOT = "td3/results/plots/{}_actor_loss_plot_{}.png".format(set_mode.
 CRITIC_LOSS_PLOT = "td3/results/plots/{}_critic_loss_plot_{}.png".format(set_mode.MODE, timestr)
 
 # save files for videos
-EPISODE_VIDEO = "td3/videos/{}_video_{}.png".format(set_mode.MODE, timestr)
-EPISODE_VIDEO_SOLVED = "td3videos/{}_video_{}_solved.png".format(set_mode.MODE, timestr)
+EPISODE_VIDEO = "td3/videos/{}_video_{}_episode_".format(set_mode.MODE, timestr)
+EPISODE_VIDEO_SOLVED = "td3videos/{}_video_{}_solved_episode_".format(set_mode.MODE, timestr)
+
+# save files for evaluation
+EVALUATION_REPORT_NAME = "td3/results/reports/{}_evaluation_report_{}.csv".format(set_mode.MODE, timestr)
+EVALUATION_REPORT = open(EVALUATION_REPORT_NAME, "w+")
+EVALUATION_VIDEO = "td3/videos/evaluate/{}_video_{}_evaluate_step_".format(set_mode.MODE, timestr)
+EVALUATION_GRAPH = "td3/results/plots/{}_evaluation_{}.png".format(set_mode.MODE, timestr)
 
 # create a list of file names
 names = [STEP_REPORT_NAME, ACTOR_REPORT_NAME, CRITIC_REPORT_NAME, ERROR_REPORT_NAME,
          ACTOR_1, ACTOR_2, CRITIC_1, CRITIC_2, EPISODE_VIDEO, EPISODE_VIDEO_SOLVED,
          AVG_REWARD_EPISODE, AVG_ROLLING_REWARD, ACTOR_LOSS_PLOT, CRITIC_LOSS_PLOT,
+         EVALUATION_REPORT_NAME, EVALUATION_VIDEO, EVALUATION_GRAPH,
          EPISODE_LENGTH, TOTAL_EPISODE_DISTANCE, MIN_DISTANCE_TO_TARGET]
 
 # save the file names for each run

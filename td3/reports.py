@@ -23,6 +23,7 @@ class Reports:
         self.actor_list = []
         self.critic_list = []
         self.error_list = []
+        self.evaluate_list = []
 
     # store data for each timestep in the report
     def write_report_step(self, episode, step, reward, step_distance_moved, step_distance_target, solved, time_elapsed):
@@ -92,6 +93,21 @@ class Reports:
         if len(self.error_list) is 100:
             self.write_report(names.ERROR_REPORT, self.error_list)
             self.error_list = []
+
+    def write_evaluate_step(self, episode, step, reward, max_episode):
+        record = [episode, step, reward]
+        # this shouldn't be that long, so just one write at the end.
+        self.evaluate_list.append(record)
+        globals.EVALUATE_LIST.append(record)
+        if len(self.evaluate_list) == max_episode:
+            self.write_report(names.EVALUATION_REPORT, self.evaluate_list)
+
+    def write_final_values(self):
+        # write any remaining values at the end of the program.
+        self.write_report(names.STEP_REPORT, self.step_list)
+        self.write_report(names.ACTOR_REPORT, self.actor_list)
+        self.write_report(names.CRITIC_REPORT, self.critic_list)
+        self.write_report(names.ERROR_REPORT, self.error_list)
 
     def write_report(self, report_file, write_list):
         """

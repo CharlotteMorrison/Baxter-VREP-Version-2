@@ -11,7 +11,7 @@ def arm_distance_reward(right_dist, left_dist):
     return (left_dist + right_dist)/2
 
 
-def target_movement_reward(start_loc, end_loc,  target_loc):
+def target_movement_reward(start_loc, end_loc, target_loc):
     """
     Calculates the distance an object has moved from an (x,y,z) position to another (x,y,z) position.
     :param start_loc: (x,y,z) float values, initial location in 3D plane

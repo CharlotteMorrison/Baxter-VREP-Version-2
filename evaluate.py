@@ -3,13 +3,16 @@ from utils import output_video
 import td3.rewards as rew
 import statistics as sta
 import set_mode
+import file_names
+import graphs
 
 
-def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
+def evaluate_policy(policy, sim, eval_episodes=5, episode_length=50):
     """run several episodes with the best agent policy"""
     avg_reward = []
 
     for i in range(eval_episodes):
+        print("Evaluation episode: {}".format(i + 1))
         video_array = []
         sim.reset_sim()
         video_array.append(sim.get_video_image())
@@ -39,27 +42,10 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             state = right_state + left_state
 
             video_array.append(sim.get_video_image())
-            ''' old reward and collision detection
-            # calculate reward
-            right_reward, left_reward = sim.calc_distance()
-            reward = (right_reward + left_reward) / 2
-            episode_reward.append(reward)
-            print(reward)
-            # determine if done
-            right_arm_collision_state = sim.right_collision_state()
-            left_arm_collision_state = sim.left_collision_state()
 
-            # check if solved
-            if right_reward > cons.SOLVED_DISTANCE and left_reward > cons.SOLVED_DISTANCE:
-                done = True
-            if right_arm_collision_state or left_arm_collision_state:
-                done = True
-            if num_of_steps > episode_length:  # needs to run longer to get near the target
-                done = True
-            '''
             target_end = sim.get_target_position()
             target_x, target_y, target_z = target_end
-            reward, _ = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
+            reward, _, _ = rew.target_movement_reward(target_start, target_end, cons.XYZ_GOAL)
 
             if round(target_x, 2) == cons.XYZ_GOAL[0] and round(target_y, 2) == cons.XYZ_GOAL[1] and \
                     round(target_z, 2) == cons.XYZ_GOAL[2]:
@@ -71,9 +57,13 @@ def evaluate_policy(policy, sim, eval_episodes=50, episode_length=50):
             if not sim.check_suction_prox():
                 done = True
 
-            cons.TD3_REPORT.write_eval_reward(i, reward)
+            cons.report.write_evaluate_step(i, num_of_steps, reward, eval_episodes)
             avg_reward.append(reward)
-        output_video(i, video_array, cons.SIZE, "td3/videos/evaluate/" + cons.DEFAULT_NAME)
+        output_video(video_array, cons.SIZE, file_names.EVALUATION_VIDEO, evaluate=True, eval_num=i)
+
+    graph = graphs.Graphs()
+    graph.avg_evaluation_episode_reward()
+
     total_avg_reward = sta.mean(avg_reward)
 
     print("\n---------------------------------------")
