@@ -62,8 +62,8 @@ def populate_buffer_zeros(sim, replay_buffer):
             buffer_storage = []
 
         if x % 1000 == 0 and x < cons.BUFFER_SIZE - 1000 and x != 0:
-            print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
-
+            # print("{} of {} loaded".format(x + replay_counter, cons.BUFFER_SIZE))
+            pass
         elif x == cons.BUFFER_SIZE - 1:
             print("{} of {} loaded".format(x + replay_counter + 1, cons.BUFFER_SIZE))
             save_buffer = open(file_loc, "ab")

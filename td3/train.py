@@ -138,9 +138,9 @@ def train(agent, sim, replay_buffer):
             if sim.check_suction_distance() > .32:
                 done = True
                 time.sleep(1)  # wait to allow the sim to catch up
-                reward = 0  # was zero, try a big, bad reward when you drop it
+                reward = - 1  # was zero, try a big, bad reward when you drop it
                 # moved back to 0, since priority reply can't handle negs, this is only
-                # giving me an outsized negative value, not really helpful.
+                # giving me an out-sized negative value, not really helpful.
                 # will make the graphs look a little better, will be around the x=0 axis, not only below
 
             # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.

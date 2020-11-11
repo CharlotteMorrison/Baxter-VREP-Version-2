@@ -49,27 +49,27 @@ class TD3(object):
         self.actor_1 = Actor(self.state_dim_a1, self.action_dim_a1, cons.MAX_ACTION).to(cons.DEVICE)
         self.actor_target_1 = Actor(self.state_dim_a1,  self.action_dim_a1, cons.MAX_ACTION).to(cons.DEVICE)
         self.actor_target_1.load_state_dict(self.actor_1.state_dict())
-        self.actor_optimizer_1 = torch.optim.Adam(self.actor_1.parameters(),  lr=1e-3)  # or 3e-4
+        self.actor_optimizer_1 = torch.optim.Adam(self.actor_1.parameters(),  lr=cons.LR)
 
         if mode is not 'cooperative':
             # actor 2: left arm
             self.actor_2 = Actor(self.state_dim_a2, self.action_dim_a2, cons.MAX_ACTION).to(cons.DEVICE)
             self.actor_target_2 = Actor(self.state_dim_a2,  self.action_dim_a2, cons.MAX_ACTION).to(cons.DEVICE)
             self.actor_target_2.load_state_dict(self.actor_2.state_dict())
-            self.actor_optimizer_2 = torch.optim.Adam(self.actor_2.parameters(), lr=1e-3)  # or 3e-4
+            self.actor_optimizer_2 = torch.optim.Adam(self.actor_2.parameters(), lr=cons.LR)
 
         # critic 1: shared critic or  right arm critic
         self.critic_1 = Critic(self.state_dim_c1,  self.action_dim_c1).to(cons.DEVICE)
         self.critic_target_1 = Critic(self.state_dim_c1,  self.action_dim_c1).to(cons.DEVICE)
         self.critic_target_1.load_state_dict(self.critic_1.state_dict())
-        self.critic_optimizer_1 = torch.optim.Adam(self.critic_1.parameters(),  lr=1e-3)  # or 3e-4
+        self.critic_optimizer_1 = torch.optim.Adam(self.critic_1.parameters(),  lr=cons.LR)
 
         if mode is 'independent':
             # critic 2 left arm
             self.critic_2 = Critic(self.state_dim_c2,  self.action_dim_c2).to(cons.DEVICE)
             self.critic_target_2 = Critic(self.state_dim_c2,  self.action_dim_c2).to(cons.DEVICE)
             self.critic_target_2.load_state_dict(self.critic_2.state_dict())
-            self.critic_optimizer_2 = torch.optim.Adam(self.critic_2.parameters(),  lr=1e-3)  # or 3e-4
+            self.critic_optimizer_2 = torch.optim.Adam(self.critic_2.parameters(),  lr=cons.LR)
 
     def select_action(self, state, actor='combined', noise=cons.POLICY_NOISE):
         """Select an appropriate action from the agent policy
@@ -135,16 +135,16 @@ class TD3(object):
             # select an action according to the policy and add clipped noise
             if self.mode == 'cooperative':
                 next_action_1 = self.actor_target_1(next_state)
-                noise_1 = torch.clamp(torch.randn((100, self.action_dim_a1), dtype=torch.float32, device='cuda') *
+                noise_1 = torch.clamp(torch.randn((cons.BATCH_SIZE, self.action_dim_a1), dtype=torch.float32, device='cuda') *
                                       cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_1 = torch.clamp((next_action_1 + noise_1), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
             else:
                 next_action_1 = self.actor_target_1(split_next_state[0])
                 next_action_2 = self.actor_target_2(split_next_state[1])
-                noise_1 = torch.clamp(torch.randn((100, self.action_dim_a1), dtype=torch.float32, device='cuda') *
+                noise_1 = torch.clamp(torch.randn((cons.BATCH_SIZE, self.action_dim_a1), dtype=torch.float32, device='cuda') *
                                                    cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_1 = torch.clamp((next_action_1 + noise_1), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
-                noise_2 = torch.clamp(torch.randn((100, self.action_dim_a2), dtype=torch.float32, device='cuda') *
+                noise_2 = torch.clamp(torch.randn((cons.BATCH_SIZE, self.action_dim_a2), dtype=torch.float32, device='cuda') *
                                       cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_2 = torch.clamp((next_action_2 + noise_2), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
 
@@ -152,23 +152,23 @@ class TD3(object):
             if self.mode != 'independent':  # partial and cooperative have only one critic
                 if self.mode == 'partial':  # need to combine the action from both actors
                     next_action_1 = torch.cat((next_action_1, next_action_2), 1)
-                target_1_q1, target_1_q2 = self.critic_1(state.float(), next_action_1.float())
+                target_1_q1, target_1_q2 = self.critic_target_1(state.float(), next_action_1.float())
                 target_1_q = torch.min(target_1_q1, target_1_q2)
-                gamma_1 = torch.ones((100, 1), dtype=torch.float32, device='cuda')
-                gamma_1 = gamma_1.new_full((100, 1), cons.GAMMA)
+                gamma_1 = torch.ones((cons.BATCH_SIZE, 1), dtype=torch.float32, device='cuda')
+                gamma_1 = gamma_1.new_full((cons.BATCH_SIZE, 1), cons.GAMMA)
                 target_1_q = reward.unsqueeze(1) + (done.unsqueeze(1) * gamma_1 * target_1_q).detach()
             else:
                 # Compute the target Q value critic 1
-                target_1_q1, target_1_q2 = self.critic_1(split_state[0].float(), next_action_1.float())
+                target_1_q1, target_1_q2 = self.critic_target_1(split_state[0].float(), next_action_1.float())
                 target_1_q = torch.min(target_1_q1, target_1_q2)
-                gamma_1 = torch.ones((100, 1), dtype=torch.float32, device='cuda')
-                gamma_1 = gamma_1.new_full((100, 1), cons.GAMMA)
+                gamma_1 = torch.ones((cons.BATCH_SIZE, 1), dtype=torch.float32, device='cuda')
+                gamma_1 = gamma_1.new_full((cons.BATCH_SIZE, 1), cons.GAMMA)
                 target_1_q = reward.unsqueeze(1) + (done.unsqueeze(1) * gamma_1 * target_1_q).detach()
                 # Compute the target Q value critic 2
-                target_2_q1, target_2_q2 = self.critic_2(split_state[1].float(), next_action_2.float())
+                target_2_q1, target_2_q2 = self.critic_target_2(split_state[1].float(), next_action_2.float())
                 target_2_q = torch.min(target_2_q1, target_2_q2)
-                gamma_2 = torch.ones((100, 1), dtype=torch.float32, device='cuda')
-                gamma_2 = gamma_2.new_full((100, 1), cons.GAMMA)
+                gamma_2 = torch.ones((cons.BATCH_SIZE, 1), dtype=torch.float32, device='cuda')
+                gamma_2 = gamma_2.new_full((cons.BATCH_SIZE, 1), cons.GAMMA)
                 target_2_q = reward.unsqueeze(1) + (done.unsqueeze(1) * gamma_2 * target_2_q).detach()
             # get current Q estimates
             if self.mode != 'independent':
