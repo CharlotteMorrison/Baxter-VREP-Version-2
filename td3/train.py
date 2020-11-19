@@ -183,7 +183,7 @@ def train(agent, sim, replay_buffer):
                     best_avg = mean_reward_episode
                     agent.save()
 
-                if video_record and episode_length > 0:  # only record episodes over 15
+                if video_record and episode_length > 10:  # only record episodes over 10
                     output_video(video_array, cons.SIZE, names.EPISODE_VIDEO)
                 if solved:
                     output_video(video_array, cons.SIZE, names.EPISODE_VIDEO_SOLVED)

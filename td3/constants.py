@@ -2,7 +2,7 @@ from reports import Reports
 import torch
 
 # testing constants
-MAX_EPISODE = 15000  # stop the training early and test the results
+MAX_EPISODE = 5000  # stop the training early and test the results
 
 # don't move this- it creates circular dependencies.
 report = Reports()
@@ -36,7 +36,7 @@ BETA_SCHED = None   # do you want manually scheduled beta
 EXPLORATION = 5000000
 OBSERVATION = 10000
 EXPLORE_NOISE = 0.1
-BATCH_SIZE = 1024       # increased from 100
+BATCH_SIZE = 1024        # paper used 1024, may be too large.
 BUFFER_SIZE = 1000000   # shrunk from 1,000,000 to 200,000
 GAMMA = 0.95            # discount was .99
 TAU = 0.005

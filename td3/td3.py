@@ -142,7 +142,7 @@ class TD3(object):
                 next_action_1 = self.actor_target_1(split_next_state[0])
                 next_action_2 = self.actor_target_2(split_next_state[1])
                 noise_1 = torch.clamp(torch.randn((cons.BATCH_SIZE, self.action_dim_a1), dtype=torch.float32, device='cuda') *
-                                                   cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
+                                                cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
                 next_action_1 = torch.clamp((next_action_1 + noise_1), min=cons.MIN_ACTION, max=cons.MAX_ACTION)
                 noise_2 = torch.clamp(torch.randn((cons.BATCH_SIZE, self.action_dim_a2), dtype=torch.float32, device='cuda') *
                                       cons.POLICY_NOISE, min=-cons.NOISE_CLIP, max=cons.NOISE_CLIP)
@@ -235,7 +235,7 @@ class TD3(object):
                     else:
                         q_action = torch.cat((q_action_1, q_action_2), 1)
                         actor_1_loss = -self.critic_1.get_q(state, q_action).mean()
-                        actor_2_loss = -self.critic_1.get_q(state, q_action).mean()
+                        actor_2_loss = -self.critic_2.get_q(state, q_action).mean()
                         del q_action
 
                     cons.report.write_report_actor(glo.EPISODE, glo.TIMESTEP, actor_1_loss, actor_2_loss)
