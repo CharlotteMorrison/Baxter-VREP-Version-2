@@ -36,6 +36,8 @@ if __name__ == '__main__':
     populate_buffer_zeros(sim, replay_buffer)
 
     # populate buffer with random actions
+
+
     # populate_buffer(sim, replay_buffer)
     train(agent, sim, replay_buffer)
 

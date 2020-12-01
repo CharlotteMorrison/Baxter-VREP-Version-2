@@ -38,8 +38,8 @@ ACTOR_LOSS_PLOT = "td3/results/plots/{}_actor_loss_plot_{}.png".format(set_mode.
 CRITIC_LOSS_PLOT = "td3/results/plots/{}_critic_loss_plot_{}.png".format(set_mode.MODE, timestr)
 
 # save files for videos
-EPISODE_VIDEO = "td3/videos/{}_video_{}_episode_".format(set_mode.MODE, timestr)
-EPISODE_VIDEO_SOLVED = "td3videos/{}_video_{}_solved_episode_".format(set_mode.MODE, timestr)
+EPISODE_VIDEO = "td3/videos/training/{}_video_{}_episode_".format(set_mode.MODE, timestr)
+EPISODE_VIDEO_SOLVED = "td3/videos/training/{}_video_{}_solved_episode_".format(set_mode.MODE, timestr)
 
 # save files for evaluation
 EVALUATION_REPORT_NAME = "td3/results/reports/{}_evaluation_report_{}.csv".format(set_mode.MODE, timestr)

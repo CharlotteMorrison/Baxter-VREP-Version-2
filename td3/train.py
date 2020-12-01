@@ -109,7 +109,7 @@ def train(agent, sim, replay_buffer):
             # calculate the reward and distance to target for the step
             reward, distance_moved, distance_to_target = rew.target_movement_reward(target_start, target_end,
                                                                                     cons.XYZ_GOAL)
-
+            # TODO: might want to use a range for each x,y,z rather than rounding.
             # round the x, y, z to compare with the goal positions
             round_target_x = round(target_x, 1)
             round_target_y = round(target_y, 1)
@@ -138,16 +138,13 @@ def train(agent, sim, replay_buffer):
             if sim.check_suction_distance() > .32:
                 done = True
                 time.sleep(1)  # wait to allow the sim to catch up
-                reward = - 1  # was zero, try a big, bad reward when you drop it
-                # moved back to 0, since priority reply can't handle negs, this is only
-                # giving me an out-sized negative value, not really helpful.
-                # will make the graphs look a little better, will be around the x=0 axis, not only below
+                reward = -1
 
             # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
             if not sim.check_suction_prox():
                 done = True
                 time.sleep(1)  # wait to allow the sim to catch up
-                reward = 0  # was zero, try a big, bad reward when you drop it
+                reward = -1  # was zero, try a big, bad reward when you drop it
 
             # update the replay buffer with new tuple
             replay_buffer.add(state, action, reward, new_state, done)

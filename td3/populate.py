@@ -1,6 +1,8 @@
 import random
 import sys
 import pickle
+import time
+
 import torch
 import td3.constants as cons
 import psutil
@@ -82,9 +84,9 @@ def populate_buffer(sim, replay_buffer):
     replay_counter = 0
 
     if platform.system() == 'Windows':
-        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-IND-1.pkl"
+        file_loc = "D:\\git\\PythonProjects\\Baxter-VREP-Version-2\\td3\\temp\\buffer-explore.pkl"
     else:
-        file_loc = "td3/temp/buffer-IND-1.pkl"
+        file_loc = "td3/temp/buffer-explore.pkl"
     with open(file_loc, "rb") as pk_file:
         while True:
             try:
@@ -114,8 +116,9 @@ def populate_buffer(sim, replay_buffer):
     buffer_storage = []
     buffer = cons.BUFFER_SIZE - replay_counter
     print('Buffer size {}/{} loaded from previous session'.format(replay_counter, cons.BUFFER_SIZE))
-    collision_count = 0 # keep track of the number of table hits in a row, reset sim if it keeps hitting table
+    collision_count = 0  # keep track of the number of table hits in a row, reset sim if it keeps hitting table
     done = False  # start with initial state of done == false
+    episode_length = 0  # makes sure an episode doesn't run indefinitely
 
     for x in range(buffer):
 
@@ -136,22 +139,8 @@ def populate_buffer(sim, replay_buffer):
         right_state, left_state = sim.step_arms(right_action, left_action)
         next_state = right_state + left_state
 
-        object_collision_table = sim.object_collision_state()
-
         # right_arm_collision_state = sim.right_collision_state()
         # left_arm_collision_state = sim.left_collision_state()
-
-        ''' old reward for moving arms towards a target
-        right_reward, left_reward = sim.calc_distance()
-        if right_reward > cons.SOLVED_DISTANCE or left_reward > cons.SOLVED_DISTANCE:
-            done = True
-        elif right_arm_collision_state or left_arm_collision_state:
-            done = True
-        else:
-            done = False
-        # set new reward as average of both rewards
-        reward = (right_reward + left_reward) / 2
-        '''
 
         target_end = sim.get_target_position()
         target_x, target_y, target_z = target_end
@@ -167,6 +156,7 @@ def populate_buffer(sim, replay_buffer):
         else:
             done = False
 
+        object_collision_table = sim.object_collision_state()
         if object_collision_table:
             # if it collides with the table 5 times in a row - end episode
             collision_count += 1
@@ -179,15 +169,22 @@ def populate_buffer(sim, replay_buffer):
         # if it is dropped, reward is zero. end the episode and start a new one, it was very bad to drop it.
         if not sim.check_suction_prox():
             done = True
+            time.sleep(1)
             reward = 0
 
-        replay_buffer.add(state, torch.tensor(action, dtype=torch.float32), reward,
-                          next_state, done)
-
+        replay_buffer.add(state, action, reward, next_state, done)
         buffer_storage.append([state, action, reward, next_state, done])
+
+        state = next_state
+
+        # stop after episode 50 (unlikely...)
+        episode_length += 1
+        if episode_length == 50:
+            done = True
 
         if done:
             sim.reset_sim()
+            episode_length = 0
 
         if x % 50 == 0:
             save_buffer = open(file_loc, "ab")
